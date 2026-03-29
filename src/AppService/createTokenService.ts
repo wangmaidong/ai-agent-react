@@ -1,68 +1,71 @@
 import {iTokenSaver} from "./createTokenSaver";
+import {defer, DFD} from '@peryl/utils/defer';
+import {login} from "./login";
 import {Axios} from "axios";
 import env from "./env";
-import {login} from "./login";
-
-const pureAxios = new Axios({ baseURL: env.baseURL });
 
 export function createTokenService(tokenSaver: iTokenSaver) {
+  const pureAxios = new Axios({ baseURL: env.baseURL });
 
-  /**
-   * access token过期时间一般是30分钟到2小时，但是refresh token过期时间一般是7天；（一些网站上登录有复选框，XX天免登录）
-   * access token：很容易暴露；
-   * refresh token：不容易暴露；
-   *
-   * token获取有这四种情况：
-   * 1. 缓存就没有token；——>> 登录
-   * 2. 缓存有token，但是access token过期，但是refresh token没有过期；——调用refresh接口，用refresh token拿一个新的access  token;
-   * 3. 缓存有token，但是access token过期，refresh token也过期了； ——>> 登录
-   * 4. 缓存有token，都没有过期 -->> 返回access token；
-   * @author  韦胜健
-   * @date    2026-03-29 11:16
-   */
+  /*变量标识，判断当前是否正在刷新token*/
+  let refreshing = false;
+
+  /*获取token的调用方进入到这里数组排队获取token*/
+  const refreshObserverList: DFD<string>[] = [];
 
   const getToken = async (): Promise<string> => {
 
-    const tokenInfo = tokenSaver.get();
-
-    // 1. 缓存就没有token；——>> 登录
-    if (!tokenInfo) {
-      login();
-      throw new Error('登录已经过期，需要重新登陆(0x01)');
+    /*当前正在刷新token，进入等待队列*/
+    if (refreshing) {
+      const dfd = defer<string>();
+      refreshObserverList.push(dfd);
+      return dfd.promise;
     }
 
-    // 2. 访问token没过期，直接返回
+    const tokenInfo = tokenSaver.get();
+
+    /*1、没有token信息的话，重新登录*/
+    if (!tokenInfo) {
+      login();
+      throw new Error("登录已经过期，重新登录 (0x01)");
+    }
+
+    /*2、access_token前端判断仍然未过期，直接使用*/
     if (!tokenInfo.isAccessExpired()) {
       return tokenInfo.access_token;
     }
 
-    // 3. 都过期了
+    /*3、access_token已经过期，尝试使用refresh_token刷新，如果refresh_token也已经过期，则返回登录*/
     if (tokenInfo.isRefreshExpired()) {
       login();
-      throw new Error('登录已经过期，需要重新登陆(0x02)');
+      throw new Error("登录已经过期，重新登录 (0x02)");
     }
 
-    // 4. access token过期，refresh token没过期，用refresh token拿一个新的access  token;
+    refreshing = true;
+
+    /*4、调用refresh接口获取新的access_token*/
     try {
-      const resp = await pureAxios.post<iTokenRefreshResponseData>('/refresh', {
-        refresh_token: tokenInfo.refresh_token,
-      });
+      const resp = await pureAxios.post<{ access_token: string, access_expires: number }>(
+        '/refresh',
+        { "refresh_token": tokenInfo.refresh_token },
+      );
+      console.log('resp.data', resp.data);
       tokenSaver.saveAccessToken(resp.data.access_token, resp.data.access_expires);
+      refreshObserverList.forEach(i => i.resolve(resp.data.access_token));
       return resp.data.access_token;
     } catch (e) {
+      console.error(e);
+      refreshObserverList.forEach(i => i.reject(new Error('refresh token failed.')));
       login();
       throw e;
+    } finally {
+      refreshing = false;
+      refreshObserverList.splice(0, refreshObserverList.length);
     }
-
   };
-
-  return { getToken };
+  return {
+    getToken,
+  };
 }
 
-export type iTokenService = ReturnType<typeof createTokenService>
-
-/*调用刷新token接口返回的数据类型*/
-export interface iTokenRefreshResponseData {
-  access_token: string, // 新的访问token
-  access_expires: number, // 新访问token的过期时间戳 比如60*1000（1分钟之后过期）
-}
+export type iTokenService = ReturnType<typeof createTokenService>;

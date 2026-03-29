@@ -2,6 +2,7 @@
   "name": "ai-agent-react",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/ai-agent-react/",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -39,7 +40,8 @@
       "react-app/jest"
     ],
     "rules": {
-      "@typescript-eslint/no-unused-vars": "off"
+      "@typescript-eslint/no-unused-vars": "off",
+      "import/no-anonymous-default-export": "off"
     }
   },
   "browserslist": {

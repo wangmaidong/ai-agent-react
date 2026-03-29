@@ -1,0 +1,28 @@
+/* 淡灰色极简好看滚动条 */
+::-webkit-scrollbar {
+  width: 7px;    /* 竖滚动条宽度 */
+  height: 7px;   /* 横滚动条高度 */
+}
+
+/* 滚动条背景轨道 */
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+/* 滚动条滑块（核心） */
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+/* 鼠标悬停时变深一点 */
+::-webkit-scrollbar-thumb:hover {
+  background: #b8b8b8;
+}
+
+/* 隐藏滚动条上下箭头 */
+::-webkit-scrollbar-button {
+  display: none;
+}

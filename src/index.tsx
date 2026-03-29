@@ -1,16 +1,18 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
-import env from './AppService/env';
-import {IndexApp, router} from './layouts/routes';
+import {IndexApp} from "./layouts/routes";
 import {ConfigProvider} from "antd";
+import zhCN from 'antd/locale/zh_CN';
+import './styles/index.scss';
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(<>
-  <ConfigProvider theme={{}}>
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <ConfigProvider locale={zhCN} theme={{
+    token: {
+      fontFamily: 'PingFang SC'
+    }
+  }}>
     {IndexApp}
   </ConfigProvider>
-</>);
-
-console.log(env, router);
-
-
+);

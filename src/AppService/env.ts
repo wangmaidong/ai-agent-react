@@ -1,3 +1,5 @@
+// console.log('process.env.REACT_APP_ENABLE_MOCK_API', process.env.REACT_APP_ENABLE_MOCK_API);
+
 const env = {
   baseURL: process.env.REACT_APP_BASE_URL,
   assetsPrefix: process.env.REACT_APP_ASSETS_PREFIX,

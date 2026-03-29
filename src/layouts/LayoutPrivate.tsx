@@ -1,6 +1,8 @@
+import React from "react";
 import {useAppService} from "../AppService/useAppService";
+import PageSpin from "../components/PageSpin";
 
-export const LayoutPrivate = (props: { children: any }) => {
+export const LayoutPrivate = (props: React.PropsWithChildren) => {
 
   const { isLoadingUser, wrapContent } = useAppService({
     cache_prefix: 'private',
@@ -9,9 +11,10 @@ export const LayoutPrivate = (props: { children: any }) => {
   });
 
   return wrapContent(
-    <div>
-      <h1>Private 路由</h1>
-      {props.children}
+    <div className="app-home" data-collapse={String(true)}>
+      <div className="app-home-body" style={{ marginLeft: 0, width: '100%' }}>
+        {isLoadingUser ? <PageSpin/> : props.children}
+      </div>
     </div>
   );
 };

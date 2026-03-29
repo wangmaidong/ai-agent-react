@@ -1,6 +1,7 @@
 import {useAppService} from "../AppService/useAppService";
+import React from "react";
 
-export const LayoutPublic = (props: { children: any }) => {
+export const LayoutPublic = (props: React.PropsWithChildren<{}>) => {
 
   const { wrapContent } = useAppService({
     cache_prefix: 'public',
@@ -8,10 +9,11 @@ export const LayoutPublic = (props: { children: any }) => {
     defaultSetToken: false,
   });
 
-
   return wrapContent(
-    <div>
-      {props.children}
+    <div className="app-home" data-collapse={String(true)}>
+      <div className="app-home-body" style={{ marginLeft: 0, width: '100%' }}>
+        {props.children}
+      </div>
     </div>
   );
 };

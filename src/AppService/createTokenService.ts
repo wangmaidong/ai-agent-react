@@ -1,25 +1,20 @@
 import {iTokenSaver} from "./createTokenSaver";
 import {defer, DFD} from '@peryl/utils/defer';
 import {login} from "./login";
-import {Axios} from "axios";
+import Axios from "axios";
 import env from "./env";
 
 export function createTokenService(tokenSaver: iTokenSaver) {
-  const pureAxios = new Axios({ baseURL: env.baseURL });
-
-  /*变量标识，判断当前是否正在刷新token*/
-  let refreshing = false;
+  const pureAxios = Axios.create({ baseURL: env.baseURL });
 
   /*获取token的调用方进入到这里数组排队获取token*/
-  const refreshObserverList: DFD<string>[] = [];
+  let waitingDfd = null as null | DFD<string>;
 
   const getToken = async (): Promise<string> => {
 
     /*当前正在刷新token，进入等待队列*/
-    if (refreshing) {
-      const dfd = defer<string>();
-      refreshObserverList.push(dfd);
-      return dfd.promise;
+    if (waitingDfd) {
+      return waitingDfd.promise;
     }
 
     const tokenInfo = tokenSaver.get();
@@ -41,26 +36,26 @@ export function createTokenService(tokenSaver: iTokenSaver) {
       throw new Error("登录已经过期，重新登录 (0x02)");
     }
 
-    refreshing = true;
+    waitingDfd = defer<string>();
 
     /*4、调用refresh接口获取新的access_token*/
     try {
-      const resp = await pureAxios.post<{ access_token: string, access_expires: number }>(
-        '/refresh',
-        { "refresh_token": tokenInfo.refresh_token },
-      );
+      const resp = await pureAxios.request<{ access_token: string, access_expires: number }>({
+        method: 'post',
+        url: '/refresh',
+        data: { "refresh_token": tokenInfo.refresh_token },
+      });
       console.log('resp.data', resp.data);
       tokenSaver.saveAccessToken(resp.data.access_token, resp.data.access_expires);
-      refreshObserverList.forEach(i => i.resolve(resp.data.access_token));
+      waitingDfd.resolve(resp.data.access_token);
       return resp.data.access_token;
     } catch (e) {
       console.error(e);
-      refreshObserverList.forEach(i => i.reject(new Error('refresh token failed.')));
+      waitingDfd.reject(new Error('refresh token failed.'));
       login();
       throw e;
     } finally {
-      refreshing = false;
-      refreshObserverList.splice(0, refreshObserverList.length);
+      waitingDfd = null;
     }
   };
   return {

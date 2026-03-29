@@ -12,7 +12,7 @@ import WeiboCircleOutlined from '@ant-design/icons/WeiboCircleOutlined';
 import AlipayCircleOutlined from '@ant-design/icons/AlipayCircleOutlined';
 import {showError} from "../utils/showError";
 import qs from "qs";
-import {Axios} from "axios";
+import Axios from "axios";
 import env from "../AppService/env";
 import {getLocationInfo} from "../AppService/login";
 import {createTokenSaver} from "../AppService/createTokenSaver";
@@ -73,7 +73,7 @@ const AccountLoginForm = () => {
       const formData = new FormData();
       formData.set('username', values.username);
       formData.set('password', values.password);
-      const resp = await new Axios({ baseURL: env.baseURL }).post<
+      const resp = await Axios.create({ baseURL: env.baseURL }).post<
         {
           result: any,
           access_token: string,
@@ -86,7 +86,7 @@ const AccountLoginForm = () => {
         formData,
         // { setToken: false }
       );
-      console.log("resp.data", resp.data);
+      console.log("resp.data", typeof resp.data, resp.data);
       /*
       * layout为private或者pages的时候，可能出现token访问过期自动跳转回登录页面的情况
       * 此时重新登录之后，跳转回对应的path页面

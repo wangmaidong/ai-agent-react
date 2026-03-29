@@ -12,11 +12,10 @@ import WeiboCircleOutlined from '@ant-design/icons/WeiboCircleOutlined';
 import AlipayCircleOutlined from '@ant-design/icons/AlipayCircleOutlined';
 import {showError} from "../utils/showError";
 import qs from "qs";
-import Axios from "axios";
-import env from "../AppService/env";
 import {getLocationInfo} from "../AppService/login";
 import {createTokenSaver} from "../AppService/createTokenSaver";
 import {router} from "../layouts/routes";
+import {useInjectApp} from "../AppService/useAppService";
 
 
 const logo = pathJoin(__webpack_public_path__, "/images/reimburse_logo.png");
@@ -66,6 +65,8 @@ const AccountLoginForm = () => {
   const [isLogin, setLogin] = useState(false);
   const [form] = Form.useForm();
 
+  const { http } = useInjectApp();
+
   const handleLogin = async () => {
     setLogin(true);
     try {
@@ -73,7 +74,7 @@ const AccountLoginForm = () => {
       const formData = new FormData();
       formData.set('username', values.username);
       formData.set('password', values.password);
-      const resp = await Axios.create({ baseURL: env.baseURL }).post<
+      const resp = await http.post<
         {
           result: any,
           access_token: string,

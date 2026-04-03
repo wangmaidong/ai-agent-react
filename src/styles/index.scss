@@ -1,0 +1,10 @@
+@import "./scrollbar";
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+}
+
+[data-no-padding=true] {
+  padding: 0;
+}

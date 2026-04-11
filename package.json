@@ -19,6 +19,7 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
+    "@langchain/core": "0.2",
     "@peryl/utils": "^0.1.75",
     "@types/webpack-env": "^1.18.8",
     "antd": "^6.3.4",

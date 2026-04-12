@@ -4,7 +4,9 @@ import { pathJoin } from '@peryl/utils/pathJoin';
 import { delay } from '@peryl/utils/delay';
 import env from '../AppService/env';
 
-const mock = new AxiosMockAdapter(Axios);
+const mock = new AxiosMockAdapter(Axios, {
+  onNoMatch: 'passthrough',
+});
 
 /*模拟登录接口*/
 export function enableMockJs() {

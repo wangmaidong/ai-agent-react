@@ -17,10 +17,13 @@ export default () => {
     getUser();
   }, [getUser]);
 
-  return <>
-    <Button onClick={testRequest}>
-      请求用户信息
-    </Button>
-    <Button onClick={logout}>登出</Button>
-  </>;
+  return (
+    <>
+      <Button onClick={testRequest}>
+        请求用户信息
+        <i className="bootstrap-icons" />
+      </Button>
+      <Button onClick={logout}>登出</Button>
+    </>
+  );
 };

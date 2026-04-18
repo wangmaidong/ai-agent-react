@@ -15,7 +15,7 @@ import qs from "qs";
 import {getLocationInfo} from "../AppService/login";
 import {createTokenSaver} from "../AppService/createTokenSaver";
 import {router} from "../layouts/routes";
-import {useInjectApp} from "../AppService/useAppService";
+import {useAppContext} from "../AppService/useAppService";
 
 
 const logo = pathJoin(__webpack_public_path__, "/images/reimburse_logo.png");
@@ -65,7 +65,7 @@ const AccountLoginForm = () => {
   const [isLogin, setLogin] = useState(false);
   const [form] = Form.useForm();
 
-  const { http } = useInjectApp();
+  const { http } = useAppContext();
 
   const handleLogin = async () => {
     setLogin(true);

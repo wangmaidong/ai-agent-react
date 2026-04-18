@@ -75,6 +75,6 @@ export type iAppService = ReturnType<typeof useAppService>;
 
 export const AppServiceContext = React.createContext<iAppService>(null as any);
 
-export function useInjectApp() {
+export function useAppContext() {
   return useContext(AppServiceContext) as iAppService;
 }

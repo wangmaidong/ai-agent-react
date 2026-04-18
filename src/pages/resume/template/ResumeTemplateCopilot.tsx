@@ -3,13 +3,15 @@ import type { AttachmentsProps, BubbleListProps, ConversationItemType } from "@a
 import { Attachments, Bubble, Conversations, Prompts, Sender, Suggestion, Think, Welcome } from "@ant-design/x";
 import { BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
-import type { DefaultMessageInfo, SSEFields, XModelMessage } from "@ant-design/x-sdk";
+import { DefaultMessageInfo, OpenAIChatProvider, SSEFields, XModelMessage } from "@ant-design/x-sdk";
 import { DeepSeekChatProvider, useXChat, useXConversations, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
 import { Button, Flex, GetProp, GetRef, message, Popover, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import locale from "./ResumeTemplateCopilot.locale";
+import { pathJoin } from "@peryl/utils/pathJoin";
+import env from "../../../AppService/env";
 
 const DEFAULT_CONVERSATIONS_ITEMS: ConversationItemType[] = [
   {
@@ -308,9 +310,22 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const listRef = useRef<BubbleListRef>(null);
 
   // ==================== Runtime ====================
-
+  const provider = useMemo(() => {
+    return new OpenAIChatProvider({
+      request: XRequest<XModelParams, XModelResponse>(
+        pathJoin(env.baseURL, "bailian-qwen3.6-plus", "/v1/chat/completions"),
+        {
+          manual: true,
+          params: {
+            model: "",
+            stream: true,
+            enable_thinking: false,
+          },
+        }),
+    });
+  }, []);
   const { onRequest, messages, isRequesting, abort } = useXChat({
-    provider: providerFactory(activeConversationKey), // every conversation has its own provider
+    provider: provider,
     conversationKey: activeConversationKey,
     defaultMessages: historyMessageFactory(activeConversationKey),
     requestPlaceholder: () => {

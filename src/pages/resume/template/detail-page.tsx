@@ -8,6 +8,7 @@ import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import FixContainer from "../../../components/FixContainer/FixContainer";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import ColorButton from "../../../components/ColorButton";
+import { ResumeTemplateCopilot } from "./ResumeTemplateCopilot";
 
 export default () => {
 
@@ -54,7 +55,7 @@ export default () => {
       <Form form={form} style={{ height: "100%" }}>
         {hasInit && (
           <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-            <div className="page-toolbar" style={{ backgroundColor: "#ffd9d9" }}>
+            <div className="page-toolbar">
               <div className="page-toolbar-title">
                 <div>{saveType === "insert" ? "新建模板" : "编辑模板"}</div>
               </div>
@@ -70,7 +71,7 @@ export default () => {
               </div>
             </div>
             <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }}>
-              <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden", backgroundColor: "#e4ffd9" }}>
+              <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer visible={viewMode === ResumeTempViewMode.code}>
                   <Form.Item noStyle name="sourceCode">
                   </Form.Item>
@@ -81,9 +82,9 @@ export default () => {
                   </div>
                 </FixContainer>
               </div>
-              <div style={{ width: "325px", backgroundColor: "#c3d3ff", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
+              <div style={{ width: "325px", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer>
-                  聊天助手区域
+                  <ResumeTemplateCopilot />
                 </FixContainer>
               </div>
             </div>

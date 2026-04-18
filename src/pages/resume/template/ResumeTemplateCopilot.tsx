@@ -5,13 +5,14 @@ import { BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
 import { DefaultMessageInfo, OpenAIChatProvider, SSEFields, XModelMessage } from "@ant-design/x-sdk";
 import { DeepSeekChatProvider, useXChat, useXConversations, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
-import { Button, Flex, GetProp, GetRef, message, Popover, Space } from "antd";
+import { Button, Flex, GetProp, GetRef, message, Popover, Select, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import React, { useMemo, useRef, useState } from "react";
 import locale from "./ResumeTemplateCopilot.locale";
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../../../AppService/env";
+import { AIConfigs, AIConfigSelectOptions } from "../../../utils/AIConfigs";
 
 const DEFAULT_CONVERSATIONS_ITEMS: ConversationItemType[] = [
   {
@@ -306,6 +307,7 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const [files, setFiles] = useState<GetProp<AttachmentsProps, "items">>([]);
 
   const [inputValue, setInputValue] = useState("");
+  const [aiConfigCode, setAIConfigCode] = useState(AIConfigs[0].aiConfigCode);
 
   const listRef = useRef<BubbleListRef>(null);
 
@@ -313,17 +315,17 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const provider = useMemo(() => {
     return new OpenAIChatProvider({
       request: XRequest<XModelParams, XModelResponse>(
-        pathJoin(env.baseURL, "bailian-qwen3.6-plus", "/v1/chat/completions"),
+        pathJoin(env.baseURL, aiConfigCode, "/v1/chat/completions"),
         {
           manual: true,
           params: {
-            model: "",
+            model: aiConfigCode,
             stream: true,
             enable_thinking: false,
           },
         }),
     });
-  }, []);
+  }, [aiConfigCode]);
   const { onRequest, messages, isRequesting, abort } = useXChat({
     provider: provider,
     conversationKey: activeConversationKey,
@@ -474,7 +476,9 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const chatSender = (
     <Flex vertical gap={12} className={styles.chatSend}>
       <Flex gap={12} align="center">
-        按钮栏
+        <Select value={aiConfigCode} onChange={setAIConfigCode}>
+          {AIConfigSelectOptions}
+        </Select>
       </Flex>
       {/** 输入框 */}
       <Suggestion items={MOCK_SUGGESTIONS} onSelect={(itemVal) => setInputValue(`[${itemVal}]:`)}>

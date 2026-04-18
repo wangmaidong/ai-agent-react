@@ -3,9 +3,8 @@ import type { AttachmentsProps, BubbleListProps, ConversationItemType } from "@a
 import { Attachments, Bubble, Conversations, Prompts, Sender, Suggestion, Think, Welcome } from "@ant-design/x";
 import { BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
-import { DefaultMessageInfo, OpenAIChatProvider, SSEFields, XModelMessage } from "@ant-design/x-sdk";
-import { DeepSeekChatProvider, useXChat, useXConversations, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
-import { Button, Flex, GetProp, GetRef, message, Popover, Select, Space } from "antd";
+import { DeepSeekChatProvider, DefaultMessageInfo, OpenAIChatProvider, SSEFields, useXChat, useXConversations, XModelMessage, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
+import { Button, Flex, GetProp, GetRef, Image, message, notification, Popover, Select, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import React, { useMemo, useRef, useState } from "react";
@@ -13,6 +12,10 @@ import locale from "./ResumeTemplateCopilot.locale";
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../../../AppService/env";
 import { AIConfigs, AIConfigSelectOptions } from "../../../utils/AIConfigs";
+import { useStableCallback } from "../../../uses/useStableCallback";
+import { getNewestValue } from "../../../uses/getNewestValue";
+import { isImageFile } from "../../../utils/isImageFile";
+import { getImageBase64 } from "../../../utils/getImageBase64";
 
 const DEFAULT_CONVERSATIONS_ITEMS: ConversationItemType[] = [
   {
@@ -261,32 +264,6 @@ interface iResumeTemplateCopilotProps {
 
 }
 
-const role: BubbleListProps["role"] = {
-  assistant: {
-    placement: "start",
-    footer: (
-      <div style={{ display: "flex" }}>
-        <Button type="text" size="small" icon={<ReloadOutlined />} />
-        <Button type="text" size="small" icon={<CopyOutlined />} />
-        <Button type="text" size="small" icon={<LikeOutlined />} />
-        <Button type="text" size="small" icon={<DislikeOutlined />} />
-      </div>
-    ),
-    contentRender(content: string) {
-      const newContent = content.replace(/\n\n/g, "<br/><br/>");
-      return (
-        <XMarkdown
-          content={newContent}
-          components={{
-            think: ThinkComponent,
-          }}
-        />
-      );
-    },
-  },
-  user: { placement: "end" },
-};
-
 export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const { styles } = useCopilotStyle();
   const attachmentsRef = useRef<GetRef<typeof Attachments>>(null);
@@ -336,7 +313,7 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
         role: "assistant",
       };
     },
-    requestFallback: (_, { error, errorInfo, messageInfo }) => {
+    requestFallback: (_, { error, errorInfo, messageInfo }: any) => {
       if (error.name === "AbortError") {
         return {
           content: messageInfo?.message?.content || locale.requestAborted,
@@ -351,18 +328,34 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   });
 
   // ==================== Event ====================
-  const handleUserSubmit = (val: string) => {
-    onRequest({
-      messages: [{ role: "user", content: val }],
-    });
+  // ==================== Event ====================
+  const handleUserSubmit = useStableCallback(async (question: string) => {
+    const newestFiles = await getNewestValue(setFiles);
+    const userMessage: XModelMessage = { role: "user", content: question };
+
+    if (!!newestFiles.length) {
+      const notImageFiles = Array.from(newestFiles).filter(file => !isImageFile(file.originFileObj!));
+      if (!!notImageFiles.length) {
+        notification.error({ description: "暂不支持非图片文件上传" });
+        return;
+      }
+      const base64StrList: string[] = await Promise.all(newestFiles.filter(i => isImageFile(i.originFileObj!)).map(i => getImageBase64(i.originFileObj!)));
+      userMessage.content = [
+        { type: "text", text: question },
+        ...base64StrList.map(base64Str => ({ type: "image_url", image_url: { url: base64Str, detail: "high" } })),
+      ] as any;
+    }
+    onRequest({ messages: [userMessage] });
     listRef.current?.scrollTo({ top: "bottom" });
+    setFiles([]);
+    setAttachmentsOpen(false);
 
     // session title mock
     const conversation = getConversation(activeConversationKey);
     if (conversation?.label === locale.newSession) {
-      setConversation(activeConversationKey, { ...conversation, label: val?.slice(0, 20) });
+      setConversation(activeConversationKey, { ...conversation, label: question?.slice(0, 20) } as any);
     }
-  };
+  });
 
   const onPasteFile = (files: FileList) => {
     for (const file of Array.from(files)) {
@@ -527,4 +520,54 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
       {chatSender}
     </div>
   );
+};
+
+
+export type iUserMessageText = { type: "text", text: string }
+export type iUserMessageImage = { type: "image_url", image_url: { url: string } }
+export type iUserMessageVideo = { type: "video_url", video_url: { url: string } }
+export type iUserMessageContent = string | (iUserMessageText | iUserMessageImage | iUserMessageVideo)[]
+
+const role: BubbleListProps["role"] = {
+  assistant: {
+    placement: "start",
+    footer: (
+      <div style={{ display: "flex" }}>
+        <Button type="text" size="small" icon={<ReloadOutlined />} />
+        <Button type="text" size="small" icon={<CopyOutlined />} />
+        <Button type="text" size="small" icon={<LikeOutlined />} />
+        <Button type="text" size="small" icon={<DislikeOutlined />} />
+      </div>
+    ),
+    contentRender(content: string) {
+      const newContent = content.replace(/\n\n/g, "<br/><br/>");
+      return (
+        <XMarkdown
+          content={newContent}
+          components={{
+            think: ThinkComponent,
+          }}
+        />
+      );
+    },
+  },
+  user: {
+    placement: "end", contentRender: (content: iUserMessageContent) => {
+      if (typeof content === "string") {
+        return <div>{content}</div>;
+      }
+      const textItems: iUserMessageText[] = content.filter(i => i.type === "text") as any;
+      const imgItems: iUserMessageImage[] = content.filter(i => i.type === "image_url") as any;
+      return (
+        <Space orientation="vertical">
+          {imgItems.map((item, index) => (
+            <Image src={item.image_url.url} alt={`image_${index + 1}`} style={{ borderRadius: "8px", overflow: "hidden" }} />
+          ))}
+          {textItems.map((item, index) => (
+            <div key={index}>{item.text}</div>
+          ))}
+        </Space>
+      );
+    },
+  },
 };

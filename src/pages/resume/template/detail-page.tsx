@@ -1,12 +1,13 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
-import { Form } from "antd";
+import { Form, Space } from "antd";
 import { useMemo, useRef, useState } from "react";
 import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY, DEMO_RESUME_DATA } from "../DEMO_RESUME_DATA";
 import { iResumeTemplateRecord, ResumeTempViewMode } from "../resume.utils";
 import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import FixContainer from "../../../components/FixContainer/FixContainer";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
+import ColorButton from "../../../components/ColorButton";
 
 export default () => {
 
@@ -58,8 +59,14 @@ export default () => {
                 <div>{saveType === "insert" ? "新建模板" : "编辑模板"}</div>
               </div>
               <div className="page-toolbar-content">
-                <Form.Item name="defaultPrimary"></Form.Item>
-                <Form.Item name="defaultSecondary"></Form.Item>
+                <Space>
+                  <Form.Item noStyle name="defaultPrimary">
+                    <ColorButton buttonText="主题色" />
+                  </Form.Item>
+                  <Form.Item noStyle name="defaultSecondary">
+                    <ColorButton buttonText="次级色" />
+                  </Form.Item>
+                </Space>
               </div>
             </div>
             <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }}>

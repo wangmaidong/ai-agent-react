@@ -1,11 +1,12 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
 import { Form } from "antd";
-import { useState } from "react";
-import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY } from "../DEMO_RESUME_DATA";
+import { useMemo, useRef, useState } from "react";
+import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY, DEMO_RESUME_DATA } from "../DEMO_RESUME_DATA";
 import { iResumeTemplateRecord, ResumeTempViewMode } from "../resume.utils";
 import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import FixContainer from "../../../components/FixContainer/FixContainer";
+import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 
 export default () => {
 
@@ -34,6 +35,18 @@ export default () => {
   */
   const [viewMode, setViewMode] = useState<typeof ResumeTempViewMode.TYPES>(id === "new" ? ResumeTempViewMode.code : ResumeTempViewMode.preview);
 
+  const formData = Form.useWatch(undefined, form) ?? {};
+
+  const snapshotElementRef = useRef(null as null | HTMLDivElement);
+
+  /*用来渲染模板的简历数据，将主题色修改为表单中的数据*/
+  const demoData = useMemo(() => {
+    return {
+      ...DEMO_RESUME_DATA,
+      primary: formData.defaultPrimary ?? DEFAULT_RESUME_PRIMARY,
+      secondary: formData.defaultSecondary ?? DEFAULT_RESUME_SECONDARY,
+    };
+  }, [formData.defaultPrimary, formData.defaultSecondary]);
 
   return (
     <PageContainer full darkerBackground={false}>
@@ -45,16 +58,20 @@ export default () => {
                 <div>{saveType === "insert" ? "新建模板" : "编辑模板"}</div>
               </div>
               <div className="page-toolbar-content">
-                工具栏按钮
+                <Form.Item name="defaultPrimary"></Form.Item>
+                <Form.Item name="defaultSecondary"></Form.Item>
               </div>
             </div>
             <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }}>
               <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden", backgroundColor: "#e4ffd9" }}>
                 <FixContainer visible={viewMode === ResumeTempViewMode.code}>
-                  代码编辑器
+                  <Form.Item noStyle name="sourceCode">
+                  </Form.Item>
                 </FixContainer>
                 <FixContainer visible={viewMode === ResumeTempViewMode.preview}>
-                  内容渲染区域
+                  <div ref={snapshotElementRef}>
+                    <ReactCodeRender code={formData.sourceCode} attrs={{ data: demoData }} />
+                  </div>
                 </FixContainer>
               </div>
               <div style={{ width: "325px", backgroundColor: "#c3d3ff", position: "relative", borderRadius: "8px", overflow: "hidden" }}>

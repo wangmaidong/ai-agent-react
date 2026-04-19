@@ -15,17 +15,22 @@ import { copyToClipboard } from "@peryl/utils/copyToClipboard";
 import { useStableCallback } from "../../../uses/useStableCallback";
 import { modifyResumeTemplateSystemPrompt } from "./modifyResumeTemplateSystemPrompt";
 import { showError } from "../../../utils/showError";
+import { useSnapshot } from "../../../uses/useSnapshot";
+import { delay } from "@peryl/utils/delay";
+import { router } from "../../../layouts/routes";
 
 
 export default () => {
 
   const {
     isLoading,
+    setIsLoading,
     saveType,
     form,
     id,
     hasInit,
     record: detailRecord,
+    save,
   } = useDetailPage<Partial<iResumeTemplateRecord>>({
     module: "llm_resume_template",
     onAfterReload: (record, saveType) => {
@@ -82,6 +87,31 @@ export default () => {
     }
   });
 
+  /*保存模板数据，重新生成预览图*/
+  const { getSnapshot } = useSnapshot();
+  const saveDetail = useStableCallback(async () => {
+    setIsLoading(true);
+    if (viewMode !== ResumeTempViewMode.preview) {
+      setViewMode(ResumeTempViewMode.preview);
+    }
+    /*生成简历预览图*/
+    const thumbImagePath = await getSnapshot({
+      el: snapshotElementRef.current!.firstElementChild as any,
+      compress: true,
+    });
+    try {
+      await save({
+        ...form.getFieldsValue(),
+        id: id,
+        thumbImage: thumbImagePath,
+      } satisfies Partial<iResumeTemplateRecord>);
+    } catch (e) {
+      showError(e);
+    } finally {
+      setIsLoading(false);
+    }
+  });
+
   return (
     <PageContainer full darkerBackground={false}>
       <Form form={form} style={{ height: "100%" }}>
@@ -109,6 +139,10 @@ export default () => {
                     }}>复制简历生成提示词</Button>
                   </Tooltip>
                   <Button onClick={() => {form.setFieldValue("sourceCode", detailRecord.sourceCode);}}>重置代码</Button>
+                  <Space.Compact>
+                    <Button onClick={() => router.navigate(-1)}>返回</Button>
+                    <Button type="primary" onClick={saveDetail}>保存</Button>
+                  </Space.Compact>
                 </Space>
               </div>
             </div>

@@ -3,7 +3,7 @@ import { iResumeUserRecord, ResumeTempViewMode, ResumeUserViewMode } from "../re
 import { useRef, useState } from "react";
 import { ResumeTemplateDefaultData } from "./ResumeTemplateDefaultData";
 import { cloneDeep } from "lodash";
-import { Button, Form, Input, Modal, Segmented, Space } from "antd";
+import { Button, Form, Input, Modal, notification, Segmented, Space } from "antd";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
 import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import { router } from "../../../layouts/routes";
@@ -23,7 +23,9 @@ import OptionButton, { iDropdownOption } from "../../../components/OptionButton"
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../../../AppService/env";
 import { exportElement2Pdf } from "../../../utils/exportElement2Pdf";
-
+import { useUploadService } from "../../../uses/useUploadService";
+import { chooseImage } from "../../../utils/FileService";
+import CloudUploadOutlined from "@ant-design/icons/CloudUploadOutlined";
 
 export default () => {
 
@@ -160,6 +162,26 @@ export default () => {
     ];
   });
 
+
+  /*---------------------------------------上传职业照-------------------------------------------*/
+
+  const { upload } = useUploadService();
+  const uploadAvatar = useStableCallback(async () => {
+    const avatarFile = await chooseImage();
+    setIsLoading(true);
+    try {
+      const fileRecord = await upload({ file: avatarFile });
+      const avatarPath = fileRecord?.path;
+      if (!avatarPath) {throw new Error("文件上传失败！" + fileRecord);}
+      form.setFieldValue(["resumeJsonData", "avatar"], pathJoin(env.assetsPrefix, avatarPath));
+    } catch (e: any) {
+      console.error(e);
+      notification.error({ description: "文件上传失败" + (e.message || JSON.stringify(e)) });
+    } finally {
+      setIsLoading(false);
+    }
+  });
+
   return (
     <PageContainer full darkerBackground={!hasInit}>
       <Form form={form} style={{ height: "100%" }}>
@@ -181,6 +203,10 @@ export default () => {
                   </Form.Item>
                   <Button onClick={reset}>重置代码</Button>
                   <OptionButton options={exportOptions} />
+                  <Button onClick={uploadAvatar}>
+                    <CloudUploadOutlined />
+                    <span>上传职业照</span>
+                  </Button>
                   <Button onClick={selectTemplate}>
                     <SearchOutlined />
                     <span>选择模板</span>

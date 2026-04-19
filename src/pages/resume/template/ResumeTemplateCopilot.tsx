@@ -3,11 +3,11 @@ import type { AttachmentsProps, BubbleListProps, ConversationItemType } from "@a
 import { Attachments, Bubble, Conversations, Prompts, Sender, Suggestion, Think, Welcome } from "@ant-design/x";
 import { BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
-import { DeepSeekChatProvider, DefaultMessageInfo, OpenAIChatProvider, SSEFields, useXChat, useXConversations, XModelMessage, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
+import { DefaultMessageInfo, OpenAIChatProvider, useXChat, useXConversations, XModelMessage, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
 import { Button, Flex, GetProp, GetRef, Image, message, notification, Popover, Select, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import locale from "./ResumeTemplateCopilot.locale";
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../../../AppService/env";
@@ -232,36 +232,8 @@ const ThinkComponent = React.memo((props: ComponentProps) => {
   );
 });
 
-/**
- * 🔔 Please replace the BASE_URL, MODEL with your own values.
- */
-const providerCaches = new Map<string, DeepSeekChatProvider>();
-const providerFactory = (conversationKey: string) => {
-  if (!providerCaches.get(conversationKey)) {
-    providerCaches.set(
-      conversationKey,
-      new DeepSeekChatProvider({
-        request: XRequest<XModelParams, Partial<Record<SSEFields, XModelResponse>>>(
-          "https://api.x.ant.design/api/big_model_glm-4.5-flash",
-          {
-            manual: true,
-            params: {
-              stream: true,
-              thinking: {
-                type: "disabled",
-              },
-              model: "glm-4.5-flash",
-            },
-          },
-        ),
-      }),
-    );
-  }
-  return providerCaches.get(conversationKey);
-};
-
 interface iResumeTemplateCopilotProps {
-
+  systemPrompt?: string | (() => string | Promise<string>),
 }
 
 export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
@@ -289,6 +261,20 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
   const listRef = useRef<BubbleListRef>(null);
 
   // ==================== Runtime ====================
+  /*定义一个不变的函数来处理 XRequest middlewares onRequest*/
+  const handleMiddlewareRequest = useCallback(async (baseURL: any, options: any) => {
+    console.log("onRequest", options, JSON.parse(options.body as any).messages);
+    const _systemPrompt = props.systemPrompt;
+    if (!!_systemPrompt) {
+      const systemPrompt = typeof _systemPrompt === "function" ? await _systemPrompt() : _systemPrompt;
+      const jsonBody = JSON.parse(options.body as any);
+      const newMessages = jsonBody.messages;
+      newMessages.unshift({ role: "system", content: systemPrompt });
+      jsonBody.messages = newMessages;
+      options.body = JSON.stringify(jsonBody);
+    }
+    return [baseURL, options];
+  }, [props.systemPrompt]);
   const provider = useMemo(() => {
     return new OpenAIChatProvider({
       request: XRequest<XModelParams, XModelResponse>(
@@ -300,13 +286,16 @@ export const ResumeTemplateCopilot = (props: iResumeTemplateCopilotProps) => {
             stream: true,
             enable_thinking: false,
           },
+          middlewares: {
+            onRequest: handleMiddlewareRequest as any,
+          },
         }),
     });
-  }, [aiConfigCode]);
+  }, [aiConfigCode, handleMiddlewareRequest]);
   const { onRequest, messages, isRequesting, abort } = useXChat({
     provider: provider,
     conversationKey: activeConversationKey,
-    defaultMessages: historyMessageFactory(activeConversationKey),
+    defaultMessages: undefined,
     requestPlaceholder: () => {
       return {
         content: locale.noData,

@@ -1,7 +1,173 @@
+import { useDetailPage } from "../../../uses/useDetailPage";
+import { iResumeUserRecord, ResumeTempViewMode, ResumeUserViewMode } from "../resume.utils";
+import { useRef, useState } from "react";
+import { ResumeTemplateDefaultData } from "./ResumeTemplateDefaultData";
+import { cloneDeep } from "lodash";
+import { Button, Form, Segmented, Space } from "antd";
+import { PageContainer } from "../../../components/PageContainer/PageContainer";
+import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
+import { router } from "../../../layouts/routes";
+import { useStableCallback } from "../../../uses/useStableCallback";
+import FixContainer from "../../../components/FixContainer/FixContainer";
+import ResumeChatCopilot from "../template/ResumeChatCopilot";
+import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
+import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
+import ColorButton from "../../../components/ColorButton";
+import { useSnapshot } from "../../../uses/useSnapshot";
+import { showError } from "../../../utils/showError";
+import { modifyResumeUserSystemPrompt } from "./modifyResumeUserSystemPrompt";
+import { delay } from "@peryl/utils/delay";
+
 export default () => {
-  return () => (
-    <div>
-      用户简历详情
-    </div>
+
+  const {
+    isLoading,
+    saveType,
+    form,
+    save,
+    id,
+    setIsLoading,
+    hasInit,
+    record: detailRecord,
+  } = useDetailPage<Partial<iResumeUserRecord>>({
+    module: "llm_resume_user",
+    getNewRecord: () => cloneDeep(ResumeTemplateDefaultData),
+    onAfterReload: (record, saveType) => {
+      record.resumeJsonData = JSON.parse(record.resumeJsonString ?? ResumeTemplateDefaultData.resumeJsonString);
+    },
+  });
+
+  const [viewMode, setViewMode] = useState<typeof ResumeUserViewMode.TYPES>(ResumeUserViewMode.preview);
+
+  /*拿到所有的表单数据*/
+  const formData: iResumeUserRecord = Form.useWatch(null, form) ?? {};
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
+  /*用来生成快照预览图的dom对象引用*/
+  const snapshotElementRef = useRef(null as null | HTMLDivElement);
+
+  /*---------------------------------------保存简历数据-------------------------------------------*/
+  const { getSnapshot } = useSnapshot();
+  const saveDetail = useStableCallback(async () => {
+    setIsLoading(true);
+    if (viewMode !== ResumeTempViewMode.preview) {
+      setViewMode(ResumeTempViewMode.preview);
+      /*等待简历渲染完毕*/
+      await delay(300);
+    }
+    /*生成简历预览图*/
+    const thumbImagePath = await getSnapshot({
+      el: snapshotElementRef.current!.firstElementChild as any,
+      compress: true,
+    });
+    try {
+      await save({
+        ...formDataRef.current,
+        id: id,
+        thumbImage: thumbImagePath,
+        resumeJsonString: JSON.stringify(formDataRef.current.resumeJsonData),
+      } satisfies Partial<iResumeUserRecord>);
+    } catch (e) {
+      showError(e);
+    } finally {
+      setIsLoading(false);
+    }
+  });
+
+  const reset = useStableCallback(async () => {
+    form.setFieldValue("sourceCode", detailRecord.sourceCode);
+    // form.setFieldValue("resumeJsonData", detailRecord.resumeJsonData);
+  });
+
+  /*系统提示词*/
+  const systemPrompt = useStableCallback(() => modifyResumeUserSystemPrompt(formData.sourceCode ?? "", formData.resumeJsonData));
+
+  /*---------------------------------------处理AI的结果消息，主要是检测是否需要更新组件代码-------------------------------------------*/
+  const handleAiMessage = useStableCallback((message: string, question: string) => {
+    const startTag = "/*---CodeStart---*/";
+    const endTag = "/*---CodeEnd---*/";
+    try {
+      if (message.indexOf(endTag) > -1) {
+        const startIndex = message.indexOf(startTag);
+        const endIndex = message.indexOf(endTag);
+        let code = message.substring(startIndex + startTag.length, endIndex).trim();
+        if (code.startsWith("```tsx")) {
+          const lastIndex = code.lastIndexOf("```");
+          code = code.substring(7, lastIndex);
+        }
+        console.log(code);
+        form.setFieldValue("sourceCode", code);
+      }
+    } catch (e) {
+      showError(e);
+    }
+  });
+
+  return (
+    <PageContainer full darkerBackground={!hasInit}>
+      <Form form={form} style={{ height: "100%" }}>
+        {/*没有这行会缺失 resumeJsonData 部分数据*/}
+        <Form.Item name="resumeJsonData" noStyle />
+        {hasInit && <>
+          <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+            <div className="page-toolbar">
+              <div className="page-toolbar-title">
+                <div>{saveType === "insert" ? "新建简历" : "编辑简历"}</div>
+              </div>
+              <div className="page-toolbar-content">
+                <Space>
+                  <Form.Item noStyle name={["resumeJsonData", "primary"]}>
+                    <ColorButton buttonText="主题色" />
+                  </Form.Item>
+                  <Form.Item noStyle name={["resumeJsonData", "secondary"]}>
+                    <ColorButton buttonText="次级色" />
+                  </Form.Item>
+                  <Button onClick={reset}>重置代码</Button>
+                  <Segmented
+                    value={viewMode}
+                    onChange={setViewMode}
+                    options={ResumeUserViewMode.selectOptions} />
+                  <Space.Compact>
+                    <Button onClick={() => router.navigate(-1)}>返回</Button>
+                    <Button type="primary" onClick={saveDetail}>保存</Button>
+                  </Space.Compact>
+                </Space>
+              </div>
+            </div>
+            <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }}>
+              <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
+                <FixContainer visible={viewMode === ResumeUserViewMode.code}>
+                  <Form.Item noStyle name="sourceCode">
+                    <MonacoEditor
+                      language="typescript"
+                      // 这里需要手动写这两个属性，不然有点bug，撤销编辑的时候不一定拿得到最新的值
+                      value={formData.sourceCode}
+                      onChange={val => {form.setFieldValue("sourceCode", val);}}
+                    />
+                  </Form.Item>
+                </FixContainer>
+                {!!formData.resumeJsonData && (
+                  <FixContainer visible={viewMode === ResumeUserViewMode.preview}>
+                    <div ref={snapshotElementRef} className="render-element">
+                      <ReactCodeRender code={formData.sourceCode} attrs={{ data: formData.resumeJsonData }} />
+                    </div>
+                  </FixContainer>
+                )}
+              </div>
+              <div style={{ width: "325px", backgroundColor: "blue", position: "relative" }}>
+                <FixContainer>
+                  <ResumeChatCopilot
+                    systemPrompt={systemPrompt}
+                    handleAiMessage={handleAiMessage}
+                  />
+                </FixContainer>
+              </div>
+            </div>
+          </div>
+        </>}
+        {isLoading && <LoadingCover />}
+      </Form>
+    </PageContainer>
   );
 }

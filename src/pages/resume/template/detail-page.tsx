@@ -1,6 +1,6 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
-import { Form, Space } from "antd";
+import { Form, Input, Space } from "antd";
 import { useMemo, useRef, useState } from "react";
 import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY, DEMO_RESUME_DATA } from "../DEMO_RESUME_DATA";
 import { iResumeTemplateRecord, ResumeTempViewMode } from "../resume.utils";
@@ -8,7 +8,7 @@ import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import FixContainer from "../../../components/FixContainer/FixContainer";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import ColorButton from "../../../components/ColorButton";
-import { ResumeTemplateCopilot } from "./ResumeTemplateCopilot";
+import { ResumeChatCopilot } from "./ResumeChatCopilot";
 
 export default () => {
 
@@ -50,6 +50,8 @@ export default () => {
     };
   }, [formData.defaultPrimary, formData.defaultSecondary]);
 
+  const [demoSystemPrompt, setDemoSystemPrompt] = useState("你必须使用英语回答问题");
+
   return (
     <PageContainer full darkerBackground={false}>
       <Form form={form} style={{ height: "100%" }}>
@@ -67,6 +69,7 @@ export default () => {
                   <Form.Item noStyle name="defaultSecondary">
                     <ColorButton buttonText="次级色" />
                   </Form.Item>
+                  <Input value={demoSystemPrompt} onChange={e => setDemoSystemPrompt(e.target.value)} />
                 </Space>
               </div>
             </div>
@@ -84,7 +87,7 @@ export default () => {
               </div>
               <div style={{ width: "325px", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer>
-                  <ResumeTemplateCopilot />
+                  <ResumeChatCopilot systemPrompt={demoSystemPrompt} />
                 </FixContainer>
               </div>
             </div>

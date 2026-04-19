@@ -3,7 +3,7 @@ import { iResumeUserRecord, ResumeTempViewMode, ResumeUserViewMode } from "../re
 import { useRef, useState } from "react";
 import { ResumeTemplateDefaultData } from "./ResumeTemplateDefaultData";
 import { cloneDeep } from "lodash";
-import { Button, Form, Segmented, Space } from "antd";
+import { Button, Form, Input, Modal, Segmented, Space } from "antd";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
 import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import { router } from "../../../layouts/routes";
@@ -19,6 +19,11 @@ import { modifyResumeUserSystemPrompt } from "./modifyResumeUserSystemPrompt";
 import { delay } from "@peryl/utils/delay";
 import { useResumeTemplateSelector } from "../template/useResumeTemplateSelector";
 import SearchOutlined from "@ant-design/icons/SearchOutlined";
+import OptionButton, { iDropdownOption } from "../../../components/OptionButton";
+import { pathJoin } from "@peryl/utils/pathJoin";
+import env from "../../../AppService/env";
+import { exportElement2Pdf } from "../../../utils/exportElement2Pdf";
+
 
 export default () => {
 
@@ -120,9 +125,39 @@ export default () => {
         sourceCode: template.sourceCode,
       });
     } catch (e) {
-      console.log(e)
+      console.log(e);
       showError(e);
     }
+  });
+
+  /*---------------------------------------导出数据-------------------------------------------*/
+
+  const [exportOptions] = useState<iDropdownOption[]>(() => {
+    return [
+      {
+        key: "export-image", label: "导出图片", handleClick: async () => {
+          const imagePath = await getSnapshot({ el: snapshotElementRef.current!.firstElementChild as any, compress: false });
+          window.open(pathJoin(env.assetsPrefix, imagePath));
+        },
+      },
+      {
+        key: "export-pdf", label: "导出PDF", handleClick: () => {
+          return exportElement2Pdf(snapshotElementRef.current!.firstElementChild as any);
+        },
+      },
+      {
+        key: "export-data", label: "导出数据", handleClick: () => {
+          console.log("导出数据");
+          Modal.info({
+            title: "导出数据",
+            icon: null,
+            closable: true,
+            width: 600,
+            content: <Input.TextArea style={{ minHeight: "400px" }} value={JSON.stringify(formDataRef.current)} />,
+          });
+        },
+      },
+    ];
   });
 
   return (
@@ -145,6 +180,7 @@ export default () => {
                     <ColorButton buttonText="次级色" />
                   </Form.Item>
                   <Button onClick={reset}>重置代码</Button>
+                  <OptionButton options={exportOptions} />
                   <Button onClick={selectTemplate}>
                     <SearchOutlined />
                     <span>选择模板</span>

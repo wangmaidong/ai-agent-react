@@ -1,6 +1,6 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
-import { Form, Input, Space } from "antd";
+import { Form, Segmented, Space } from "antd";
 import { useMemo, useRef, useState } from "react";
 import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY, DEMO_RESUME_DATA } from "../DEMO_RESUME_DATA";
 import { iResumeTemplateRecord, ResumeTempViewMode } from "../resume.utils";
@@ -9,6 +9,7 @@ import FixContainer from "../../../components/FixContainer/FixContainer";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import ColorButton from "../../../components/ColorButton";
 import { ResumeChatCopilot } from "./ResumeChatCopilot";
+import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
 
 export default () => {
 
@@ -50,8 +51,6 @@ export default () => {
     };
   }, [formData.defaultPrimary, formData.defaultSecondary]);
 
-  const [demoSystemPrompt, setDemoSystemPrompt] = useState("你必须使用英语回答问题");
-
   return (
     <PageContainer full darkerBackground={false}>
       <Form form={form} style={{ height: "100%" }}>
@@ -69,7 +68,10 @@ export default () => {
                   <Form.Item noStyle name="defaultSecondary">
                     <ColorButton buttonText="次级色" />
                   </Form.Item>
-                  <Input value={demoSystemPrompt} onChange={e => setDemoSystemPrompt(e.target.value)} />
+                  <Segmented
+                    value={viewMode}
+                    onChange={setViewMode}
+                    options={ResumeTempViewMode.selectOptions} />
                 </Space>
               </div>
             </div>
@@ -77,6 +79,12 @@ export default () => {
               <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer visible={viewMode === ResumeTempViewMode.code}>
                   <Form.Item noStyle name="sourceCode">
+                    <MonacoEditor
+                      language="typescript"
+                      // 这里需要手动写这两个属性，不然有点bug，撤销编辑的时候不一定拿得到最新的值
+                      value={formData.sourceCode}
+                      onChange={val => {form.setFieldValue("sourceCode", val);}}
+                    />
                   </Form.Item>
                 </FixContainer>
                 <FixContainer visible={viewMode === ResumeTempViewMode.preview}>
@@ -87,7 +95,7 @@ export default () => {
               </div>
               <div style={{ width: "325px", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer>
-                  <ResumeChatCopilot systemPrompt={demoSystemPrompt} />
+                  <ResumeChatCopilot />
                 </FixContainer>
               </div>
             </div>

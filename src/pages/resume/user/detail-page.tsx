@@ -9,7 +9,7 @@ import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import { router } from "../../../layouts/routes";
 import { useStableCallback } from "../../../uses/useStableCallback";
 import FixContainer from "../../../components/FixContainer/FixContainer";
-import ResumeChatCopilot from "../template/ResumeChatCopilot";
+import ResumeChatCopilot, { iResumeChatCopilotInstance } from "../template/ResumeChatCopilot";
 import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
 import ColorButton from "../../../components/ColorButton";
 import { useSnapshot } from "../../../uses/useSnapshot";
@@ -29,6 +29,7 @@ import ResumeEditor from "./ResumeEditor";
 import { useBufferStringHandler } from "./useBufferStringHandler";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import PageSpin from "../../../components/PageSpin";
+import { doNothing } from "@peryl/utils/doNothing";
 
 export default () => {
 
@@ -205,6 +206,24 @@ export default () => {
     },
   });
 
+  /*---------------------------------------AI翻译-------------------------------------------*/
+
+  const copilotRef = useRef(null as null | iResumeChatCopilotInstance);
+
+  const [languageOptions] = useState<(iDropdownOption & { promptName: string })[]>(() => {
+    const val: (iDropdownOption & { promptName: string })[] = [
+      { key: "1", label: "English", promptName: "英语" },
+      { key: "2", label: "日本語", promptName: "日语" },
+      { key: "3", label: "Français", promptName: "法语" },
+      { key: "4", label: "Deutsch", promptName: "德语" },
+      { key: "5", label: "Русский язык", promptName: "俄语" },
+      { key: "0", label: "简体中文", promptName: "中文" },
+    ];
+    val.forEach(item => item.handleClick = () => {
+      copilotRef.current?.send(`翻译成 ${item.promptName}，不要修改我的简历模板代码，简历信息中的primary，secondary以及avatar不变`);
+    });
+    return val;
+  });
   return (
     <PageContainer full darkerBackground={!hasInit}>
       <Form form={form} style={{ height: "100%" }}>
@@ -277,10 +296,17 @@ export default () => {
               <div style={{ width: "325px", backgroundColor: "blue", position: "relative" }}>
                 <FixContainer>
                   <ResumeChatCopilot
+                    ref={copilotRef}
+                    // value="翻译成日语，技术栈用雷达图展示"
                     systemPrompt={systemPrompt}
                     handleAiMessage={handleAiMessage}
                     onSend={bufferStringHandler.onBegin}
                     handleAiUpdate={bufferStringHandler.onChunk}
+                    toolContent={(
+                      <OptionButton options={languageOptions} handleClick={doNothing}>
+                        智能翻译
+                      </OptionButton>
+                    )}
                   />
                 </FixContainer>
               </div>

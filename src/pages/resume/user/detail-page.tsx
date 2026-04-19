@@ -3,7 +3,7 @@ import { iResumeUserRecord, ResumeTempViewMode, ResumeUserViewMode } from "../re
 import { useRef, useState } from "react";
 import { ResumeTemplateDefaultData } from "./ResumeTemplateDefaultData";
 import { cloneDeep } from "lodash";
-import { Button, Form, Input, Modal, notification, Segmented, Space } from "antd";
+import { Button, Card, Form, Input, Modal, notification, Segmented, Space } from "antd";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
 import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import { router } from "../../../layouts/routes";
@@ -26,6 +26,7 @@ import { exportElement2Pdf } from "../../../utils/exportElement2Pdf";
 import { useUploadService } from "../../../uses/useUploadService";
 import { chooseImage } from "../../../utils/FileService";
 import CloudUploadOutlined from "@ant-design/icons/CloudUploadOutlined";
+import ResumeEditor from "./ResumeEditor";
 
 export default () => {
 
@@ -241,6 +242,11 @@ export default () => {
                     </div>
                   </FixContainer>
                 )}
+                <FixContainer visible={viewMode === ResumeUserViewMode.data}>
+                  <Card>
+                    <ResumeEditor form={form} />
+                  </Card>
+                </FixContainer>
               </div>
               <div style={{ width: "325px", backgroundColor: "blue", position: "relative" }}>
                 <FixContainer>

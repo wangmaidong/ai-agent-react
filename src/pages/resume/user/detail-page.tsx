@@ -11,7 +11,6 @@ import { useStableCallback } from "../../../uses/useStableCallback";
 import FixContainer from "../../../components/FixContainer/FixContainer";
 import ResumeChatCopilot from "../template/ResumeChatCopilot";
 import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
-import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import ColorButton from "../../../components/ColorButton";
 import { useSnapshot } from "../../../uses/useSnapshot";
 import { showError } from "../../../utils/showError";
@@ -27,6 +26,9 @@ import { useUploadService } from "../../../uses/useUploadService";
 import { chooseImage } from "../../../utils/FileService";
 import CloudUploadOutlined from "@ant-design/icons/CloudUploadOutlined";
 import ResumeEditor from "./ResumeEditor";
+import { useBufferStringHandler } from "./useBufferStringHandler";
+import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
+import PageSpin from "../../../components/PageSpin";
 
 export default () => {
 
@@ -95,6 +97,7 @@ export default () => {
 
   /*---------------------------------------处理AI的结果消息，主要是检测是否需要更新组件代码-------------------------------------------*/
   const handleAiMessage = useStableCallback((message: string, question: string) => {
+    bufferStringHandler.onFinish();
     const startTag = "/*---CodeStart---*/";
     const endTag = "/*---CodeEnd---*/";
     try {
@@ -183,6 +186,25 @@ export default () => {
     }
   });
 
+  /*---------------------------------------处理AI流式响应消息，主要处理更新简历文案内容-------------------------------------------*/
+  const bufferStringHandler = useBufferStringHandler({
+    setState: (dispatch) => {
+      const value = form.getFieldValue("resumeJsonData");
+      form.setFieldValue("resumeJsonData", dispatch(value));
+    },
+    onBeginProcess: () => {
+      /*每次修改简历内容的时候，先重置简历数据*/
+      form.setFieldValue("resumeJsonData", {});
+      /*强制将视图切换到简历表单视图，因为在流式修改简历信息过程中回频繁触发渲染更新，此时最好不显示preview以及code*/
+      setViewMode("data");
+    },
+    onFinishProcess: () => {
+      /*简历信息修改完毕，回到预览视图*/
+      setViewMode("preview");
+      notification.success({ description: "已经更新完毕！" });
+    },
+  });
+
   return (
     <PageContainer full darkerBackground={!hasInit}>
       <Form form={form} style={{ height: "100%" }}>
@@ -227,20 +249,24 @@ export default () => {
               <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer visible={viewMode === ResumeUserViewMode.code}>
                   <Form.Item noStyle name="sourceCode">
-                    <MonacoEditor
-                      language="typescript"
-                      // 这里需要手动写这两个属性，不然有点bug，撤销编辑的时候不一定拿得到最新的值
-                      value={formData.sourceCode}
-                      onChange={val => {form.setFieldValue("sourceCode", val);}}
-                    />
+                    {bufferStringHandler.isDataRegion ? <PageSpin /> : (
+                      <MonacoEditor
+                        language="typescript"
+                        // 这里需要手动写这两个属性，不然有点bug，撤销编辑的时候不一定拿得到最新的值
+                        value={formData.sourceCode}
+                        onChange={val => {form.setFieldValue("sourceCode", val);}}
+                      />
+                    )}
                   </Form.Item>
                 </FixContainer>
-                {!!formData.resumeJsonData && (
-                  <FixContainer visible={viewMode === ResumeUserViewMode.preview}>
-                    <div ref={snapshotElementRef} className="render-element">
-                      <ReactCodeRender code={formData.sourceCode} attrs={{ data: formData.resumeJsonData }} />
-                    </div>
-                  </FixContainer>
+                {bufferStringHandler.isDataRegion ? <PageSpin /> : (
+                  !!formData.resumeJsonData && (
+                    <FixContainer visible={viewMode === ResumeUserViewMode.preview}>
+                      <div ref={snapshotElementRef} className="render-element">
+                        <ReactCodeRender code={formData.sourceCode} attrs={{ data: formData.resumeJsonData }} />
+                      </div>
+                    </FixContainer>
+                  )
                 )}
                 <FixContainer visible={viewMode === ResumeUserViewMode.data}>
                   <Card>
@@ -253,6 +279,8 @@ export default () => {
                   <ResumeChatCopilot
                     systemPrompt={systemPrompt}
                     handleAiMessage={handleAiMessage}
+                    onSend={bufferStringHandler.onBegin}
+                    handleAiUpdate={bufferStringHandler.onChunk}
                   />
                 </FixContainer>
               </div>

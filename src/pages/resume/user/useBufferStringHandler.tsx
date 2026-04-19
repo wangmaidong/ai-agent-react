@@ -132,7 +132,7 @@ export function useBufferStringHandler<T>(
  * 例如: "education.1.school" -> ["education", 1, "school"]
  * 注意：它会自动将字符串数字转为真正的 Number 类型，方便后续作为数组下标使用
  */
-const parsePath = (pathStr: string) => {
+export const parsePath = (pathStr: string) => {
   return pathStr.split(".").map(key => (isNaN(Number(key)) ? key : Number(key)));
 };
 
@@ -142,7 +142,7 @@ const parsePath = (pathStr: string) => {
  * @param path 解析后的路径数组
  * @param value 要设置的值
  */
-const setValueByPath = (draft: any, path: (string | number)[], value: any) => {
+export const setValueByPath = (draft: any, path: (string | number)[], value: any) => {
   if ([";", "；", ".", "。"].indexOf(value[value.length - 1]) > -1) {
     value = value.slice(0, -1);
   }

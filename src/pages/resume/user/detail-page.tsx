@@ -17,6 +17,8 @@ import { useSnapshot } from "../../../uses/useSnapshot";
 import { showError } from "../../../utils/showError";
 import { modifyResumeUserSystemPrompt } from "./modifyResumeUserSystemPrompt";
 import { delay } from "@peryl/utils/delay";
+import { useResumeTemplateSelector } from "../template/useResumeTemplateSelector";
+import SearchOutlined from "@ant-design/icons/SearchOutlined";
 
 export default () => {
 
@@ -104,6 +106,25 @@ export default () => {
     }
   });
 
+  /*---------------------------------------选择模板-------------------------------------------*/
+  const templateSelector = useResumeTemplateSelector();
+  const selectTemplate = useStableCallback(async () => {
+    try {
+      const template = await templateSelector.selectTemplate();
+      form.setFieldsValue({
+        resumeJsonData: {
+          ...formData.resumeJsonData,
+          primary: template.defaultPrimary,
+          secondary: template.defaultSecondary,
+        },
+        sourceCode: template.sourceCode,
+      });
+    } catch (e) {
+      console.log(e)
+      showError(e);
+    }
+  });
+
   return (
     <PageContainer full darkerBackground={!hasInit}>
       <Form form={form} style={{ height: "100%" }}>
@@ -124,6 +145,10 @@ export default () => {
                     <ColorButton buttonText="次级色" />
                   </Form.Item>
                   <Button onClick={reset}>重置代码</Button>
+                  <Button onClick={selectTemplate}>
+                    <SearchOutlined />
+                    <span>选择模板</span>
+                  </Button>
                   <Segmented
                     value={viewMode}
                     onChange={setViewMode}

@@ -8,10 +8,13 @@ import { LoadingCover } from "../../../components/LoadingCover/LoadingCover";
 import FixContainer from "../../../components/FixContainer/FixContainer";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import ColorButton from "../../../components/ColorButton";
-import { ResumeChatCopilot } from "./ResumeChatCopilot";
+import { iResumeChatCopilotProps, ResumeChatCopilot } from "./ResumeChatCopilot";
 import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
 import { generateResumeTemplateCodeSystemPrompt } from "./generateResumeTemplateSystemPrompt";
 import { copyToClipboard } from "@peryl/utils/copyToClipboard";
+import { useStableCallback } from "../../../uses/useStableCallback";
+import { modifyResumeTemplateSystemPrompt } from "./modifyResumeTemplateSystemPrompt";
+import { showError } from "../../../utils/showError";
 
 
 export default () => {
@@ -22,6 +25,7 @@ export default () => {
     form,
     id,
     hasInit,
+    record: detailRecord,
   } = useDetailPage<Partial<iResumeTemplateRecord>>({
     module: "llm_resume_template",
     onAfterReload: (record, saveType) => {
@@ -54,6 +58,30 @@ export default () => {
     };
   }, [formData.defaultPrimary, formData.defaultSecondary]);
 
+  /*系统提示词*/
+  const systemPrompt = useStableCallback(() => modifyResumeTemplateSystemPrompt(formData.sourceCode));
+
+  /*处理AI响应结果*/
+  const handleAiMessage: iResumeChatCopilotProps["handleAiMessage"] = useStableCallback(async (message) => {
+    const startTag = "/*---CodeStart---*/";
+    const endTag = "/*---CodeEnd---*/";
+    try {
+      if (message.indexOf(endTag) > -1) {
+        const startIndex = message.indexOf(startTag);
+        const endIndex = message.indexOf(endTag);
+        let code = message.substring(startIndex + startTag.length, endIndex).trim();
+        if (code.startsWith("```tsx")) {
+          const lastIndex = code.lastIndexOf("```");
+          code = code.substring(7, lastIndex);
+        }
+        console.log(code);
+        form.setFieldValue("sourceCode", code);
+      }
+    } catch (e) {
+      showError(e);
+    }
+  });
+
   return (
     <PageContainer full darkerBackground={false}>
       <Form form={form} style={{ height: "100%" }}>
@@ -80,6 +108,7 @@ export default () => {
                       copyToClipboard(generateResumeTemplateCodeSystemPrompt, () => message.success("已复制"));
                     }}>复制简历生成提示词</Button>
                   </Tooltip>
+                  <Button onClick={() => {form.setFieldValue("sourceCode", detailRecord.sourceCode);}}>重置代码</Button>
                 </Space>
               </div>
             </div>
@@ -103,7 +132,10 @@ export default () => {
               </div>
               <div style={{ width: "325px", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer>
-                  <ResumeChatCopilot />
+                  <ResumeChatCopilot
+                    systemPrompt={systemPrompt}
+                    handleAiMessage={handleAiMessage}
+                  />
                 </FixContainer>
               </div>
             </div>

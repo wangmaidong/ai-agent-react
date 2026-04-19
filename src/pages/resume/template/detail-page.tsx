@@ -1,6 +1,6 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { PageContainer } from "../../../components/PageContainer/PageContainer";
-import { Form, Segmented, Space } from "antd";
+import { Button, Form, message, Segmented, Space, Tooltip } from "antd";
 import { useMemo, useRef, useState } from "react";
 import { DEFAULT_RESUME_PRIMARY, DEFAULT_RESUME_SECONDARY, DEMO_RESUME_DATA } from "../DEMO_RESUME_DATA";
 import { iResumeTemplateRecord, ResumeTempViewMode } from "../resume.utils";
@@ -10,6 +10,9 @@ import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRe
 import ColorButton from "../../../components/ColorButton";
 import { ResumeChatCopilot } from "./ResumeChatCopilot";
 import { MonacoEditor } from "../../../components/MonacoEditor/MonacoEditor";
+import { generateResumeTemplateCodeSystemPrompt } from "./generateResumeTemplateSystemPrompt";
+import { copyToClipboard } from "@peryl/utils/copyToClipboard";
+
 
 export default () => {
 
@@ -72,6 +75,11 @@ export default () => {
                     value={viewMode}
                     onChange={setViewMode}
                     options={ResumeTempViewMode.selectOptions} />
+                  <Tooltip title="用于在顶级模型中(exp:Gemini)根据参考图生成组件代码">
+                    <Button type="dashed" onClick={() => {
+                      copyToClipboard(generateResumeTemplateCodeSystemPrompt, () => message.success("已复制"));
+                    }}>复制简历生成提示词</Button>
+                  </Tooltip>
                 </Space>
               </div>
             </div>

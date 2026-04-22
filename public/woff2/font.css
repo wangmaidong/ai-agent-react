@@ -1,0 +1,63 @@
+/* 1. 超轻 Ultralight (font-weight: 100) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Ultralight.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap; /* 优化加载体验，先显示系统字体，加载完成后替换 */
+}
+
+/* 2. 细体 Thin (font-weight: 200) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Thin.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 3. 轻量 Light (font-weight: 300) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 4. 常规 Regular (font-weight: 400，默认字重) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 5. 中粗 Medium (font-weight: 500) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 6. 半粗 Semibold (font-weight: 600) */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('./PingFangSC-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 全局字体 fallback 配置（兼容系统自带 PingFang） */
+:root {
+  --font-pingfang: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-pingfang), fangsong;
+  font-weight: 400; /* 默认常规字重 */
+}

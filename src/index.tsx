@@ -20,4 +20,4 @@ root.render(
   </ConfigProvider>
 );
 
-env.enableMockApi && enableMockJs();
+// env.enableMockApi && enableMockJs();

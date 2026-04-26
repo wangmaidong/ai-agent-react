@@ -1,20 +1,20 @@
 export interface iBaseRecord {
   id: string;
-  created_at: string;
-  created_by: string;
-  updated_at: string;
-  updated_by: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface iUserRecord extends iBaseRecord {
   username: string;
   email: string;
-  full_name: string;
+  fullName: string;
   valid: string;
 
-  pos_code: string;
-  pos_name: string;
-  org_name: string;
+  posCode: string;
+  posName: string;
+  orgName: string;
   pos?: iPosRecord;
 }
 
@@ -22,10 +22,10 @@ export interface iPosRecord extends iBaseRecord {
   code: string;
   name: string;
   remarks: string;
-  parent_code: string;
-  parent_name: string;
-  organization_code: string;
-  organization_name: string;
+  parentCode: string;
+  parentName: string;
+  organizationCode: string;
+  organizationName: string;
 }
 
 export default {};

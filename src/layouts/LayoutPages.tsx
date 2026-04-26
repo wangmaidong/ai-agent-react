@@ -61,7 +61,7 @@ export const LayoutPages = (props: { children: any }) => {
                 <img src={user} alt="user_avatar"/>
                 {isLoadingUser && <PageSpin/>}
                 {!!userInfo && <>
-                  <span>{userInfo.full_name}</span>&nbsp;@&nbsp;
+                  <span>{userInfo.fullName}</span>&nbsp;@&nbsp;
                   <span>{userInfo.pos?.name}</span>
                 </>}
               </Button>

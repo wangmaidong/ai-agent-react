@@ -1,0 +1,43 @@
+.app-home {
+  .aic-page-container {
+    padding: 1em;
+    box-sizing: border-box;
+
+    &.aic-page-container-full {
+      height: calc(100vh - var(--app-header-szie));
+    }
+
+    &.aic-page-container-no-padding {
+      padding: 0;
+    }
+
+    &.aic-page-container-darker-background {
+      background-color: #eaeaea;
+    }
+
+    .page-toolbar {
+      background-color: white;
+      padding: 1em;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .page-toolbar-title {
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .page-toolbar-content {
+        & > .ant-space {
+          display: flex;
+          align-items: center;
+
+          .ant-space-item {
+            display: flex;
+          }
+        }
+      }
+    }
+  }
+}

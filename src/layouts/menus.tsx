@@ -19,7 +19,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 export const menus: MenuItem[] = [
   { key: '/pages/home', icon: <HomeOutlined/>, label: '系统首页', },
-
+  { key: '/pages/resume/resume-template-list', icon: <FormatPainterOutlined/>, label: '简历模板', },
   { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
 
   { key: '/pages/org/org', icon: <ClusterOutlined/>, label: '组织管理', },

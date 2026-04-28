@@ -304,7 +304,7 @@ const ResumeChatCopilot = React.forwardRef<iResumeChatCopilotInstance, iResumeCh
   );
   const chatSender = (
     <Flex vertical gap={12} className={styles.chatSend}>
-      <Flex gap={12} justify={!props.toolContent ? "end" : "space-between"}>
+      <Flex gap={12} justify="flex-end">
         {props.toolContent}
         <Select value={aiConfigCode} onChange={setAIConfigCode}>
           {AIConfigSelectOptions}

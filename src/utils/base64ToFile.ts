@@ -7,7 +7,6 @@ export const nextTempFilename = createCounter('temp_file');
  * @date    2023/6/21 10:24
  */
 export function base64toFile(dataurl: string, filename?: string, WindowFile?: typeof window.File) {
-  debugger
   let arr = dataurl.split(',');
   let mime = arr[0].match(/:(.*?);/)![1];
   // suffix是该文件的后缀

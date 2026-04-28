@@ -1,11 +1,11 @@
-import {Axios} from "axios";
+import Axios from "axios";
 import env from "./env";
 import {showError} from "../utils/showError";
 import {iTokenService} from "./createTokenService";
 import {login} from "./login";
 
 export function createHttp(tokenService: iTokenService, defaultSetToken: boolean) {
-  const http = new Axios({
+  const http = Axios.create({
     baseURL: env.baseURL
   });
   http.interceptors.request.use(async (config) => {

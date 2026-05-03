@@ -148,8 +148,9 @@ export default () => {
         },
       },
       {
-        key: "export-pdf", label: "导出PDF", handleClick: () => {
+        key: "export-pdf", label: "导出PDF", handleClick: async () => {
           // return exportElement2Pdf(snapshotElementRef.current!.firstElementChild as any);
+          await delay(500);
           window.print();
         },
       },

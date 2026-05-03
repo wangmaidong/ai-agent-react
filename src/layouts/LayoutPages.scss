@@ -114,4 +114,20 @@
     width: calc(100% - var(--app-menu-szie));
     margin-left: var(--app-menu-szie);
   }
+
+  @media print {
+    .app-home-menus, .app-home-header {
+      display: none;
+    }
+
+    .app-home-body {
+      margin-left: 0;
+      width: auto;
+
+      .aic-page-container {
+        height: auto !important;
+      }
+    }
+  }
+
 }

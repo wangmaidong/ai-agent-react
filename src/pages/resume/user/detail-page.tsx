@@ -21,7 +21,6 @@ import SearchOutlined from "@ant-design/icons/SearchOutlined";
 import OptionButton, { type iDropdownOption } from "../../../components/OptionButton";
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../../../AppService/env";
-import { exportElement2Pdf } from "../../../utils/exportElement2Pdf";
 import { useUploadService } from "../../../uses/useUploadService";
 import { chooseImage } from "../../../utils/FileService";
 import CloudUploadOutlined from "@ant-design/icons/CloudUploadOutlined";
@@ -30,6 +29,7 @@ import { useBufferStringHandler } from "./useBufferStringHandler";
 import { ReactCodeRender } from "../../../components/ReactCodeRender/ReactCodeRender";
 import PageSpin from "../../../components/PageSpin";
 import { doNothing } from "@peryl/utils/doNothing";
+import "./resume-user-detail-page.scss";
 
 export default () => {
 
@@ -149,7 +149,8 @@ export default () => {
       },
       {
         key: "export-pdf", label: "导出PDF", handleClick: () => {
-          return exportElement2Pdf(snapshotElementRef.current!.firstElementChild as any);
+          // return exportElement2Pdf(snapshotElementRef.current!.firstElementChild as any);
+          window.print();
         },
       },
       {
@@ -225,7 +226,7 @@ export default () => {
     return val;
   });
   return (
-    <PageContainer full darkerBackground={!hasInit}>
+    <PageContainer full darkerBackground={!hasInit} className="resume-user-detail-page">
       <Form form={form} style={{ height: "100%" }}>
         {/*没有这行会缺失 resumeJsonData 部分数据*/}
         <Form.Item name="resumeJsonData" noStyle />
@@ -264,7 +265,7 @@ export default () => {
                 </Space>
               </div>
             </div>
-            <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }}>
+            <div style={{ flex: 1, marginTop: "1em", display: "flex", alignItems: "stretch" }} className="page-content">
               <div style={{ flex: 1, marginRight: "1em", position: "relative", borderRadius: "8px", overflow: "hidden" }}>
                 <FixContainer visible={viewMode === ResumeUserViewMode.code}>
                   <Form.Item noStyle name="sourceCode">

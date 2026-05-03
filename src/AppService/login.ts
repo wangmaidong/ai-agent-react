@@ -1,9 +1,10 @@
 import qs from "qs";
 import {router} from "../layouts/routes";
+import {PUBLIC_PATH} from "./env.ts";
 
 export function getLocationInfo() {
   return {
-    path: ('/' + window.location.pathname.replace(new RegExp(`^/?${__webpack_public_path__}/?`), '')),
+    path: ('/' + window.location.pathname.replace(new RegExp(`^/?${PUBLIC_PATH}/?`), '')),
     param: qs.parse(window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search),
   };
 }

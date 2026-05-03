@@ -1,6 +1,6 @@
 import {useLocation} from "react-router";
 import React, {useState} from "react";
-import {Button, Dropdown, Menu, MenuProps, Space} from "antd";
+import {Button, Dropdown, Menu,type MenuProps, Space} from "antd";
 import './LayoutPages.scss';
 import RightOutlined from '@ant-design/icons/RightOutlined';
 import LeftOutlined from '@ant-design/icons/LeftOutlined';
@@ -9,9 +9,10 @@ import {PageSpin} from "../components/PageSpin";
 import {menus} from "./menus";
 import {pathJoin} from '@peryl/utils/pathJoin';
 import {useAppService} from "../AppService/useAppService";
+import {PUBLIC_PATH} from "../AppService/env.ts";
 
-const logo = pathJoin(__webpack_public_path__, "/images/reimburse_logo.png");
-const user = pathJoin(__webpack_public_path__, "/images/user.png");
+const logo = pathJoin(PUBLIC_PATH, "/images/reimburse_logo.png");
+const user = pathJoin(PUBLIC_PATH, "/images/user.png");
 
 export const LayoutPages = (props: { children: any }) => {
 

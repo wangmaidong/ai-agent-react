@@ -3,7 +3,7 @@ import { useRootRenderContext } from "./useRootRender";
 import { uuid } from "@peryl/utils/uuid";
 import { showError } from "../utils/showError";
 import { delay } from "@peryl/utils/delay";
-import { Button, Modal, ModalProps, Space } from "antd";
+import { Button, Modal, type ModalProps, Space } from "antd";
 import { useMounted } from "./useMounted";
 import { LoadingCover } from "../components/LoadingCover/LoadingCover";
 

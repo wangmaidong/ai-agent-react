@@ -19,12 +19,31 @@ export const DynamicPage = (props: { dirname: string }) => {
       // console.log(`dynamic page: ${routeName}`);
       (async () => {
         try {
-          const PageComponent = await import('../../' + props.dirname + '/' + routeName + '-page').then(val => val.default);
+          const modules = modulesMap[props.dirname];
+          if (!modules) {
+            throw new Error(`无效的目录名: ${props.dirname}`);
+          }
+
+          const path = `../../${props.dirname}/${routeName}-page`;
+          let PageComponent = null as any;
+
+          console.log({ modulesMap });
+
+          for (const ext of pageExtensions) {
+            const modulePath = `${path}${ext}`;
+            if (modules[modulePath]) {
+              const val = await modules[modulePath]();
+              console.log(val);
+              PageComponent = await (modules[modulePath]().then((val: any) => val.default));
+              break;
+            }
+          }
           if (!PageComponent) {
             notification.error({ message: 'Missing export default in page.' });
           }
           setComponent(() => PageComponent);
         } catch (e) {
+          console.error(e)
           setComponent(() => {
             return () => (
               <div style={{ padding: '1em' }}>
@@ -47,3 +66,11 @@ export const DynamicPage = (props: { dirname: string }) => {
 
   return !Component ? <PageSpin/> : <Component {...props as any}/>;
 };
+
+const modulesMap: Record<string, any> = {
+  pages: import.meta.glob('../../pages/**/*-page.*', { eager: false }),
+  private: import.meta.glob('../../private/**/*-page.*', { eager: false }),
+  public: import.meta.glob('../../public/**/*-page.*', { eager: false })
+};
+
+const pageExtensions = ['.vue', '.tsx', '.ts', '.jsx', '.js'];

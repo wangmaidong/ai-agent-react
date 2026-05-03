@@ -133,7 +133,7 @@ export const DEMO_RESUME_DATA: iResumeFormData = {
   title: "高级AI全栈开发工程师",
   primary: "#4816ff",      // 主色调：科技蓝
   secondary: "#ff1639",    // 辅色调：深紫
-  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+  avatar: "https://plain-assets.oss-cn-guangzhou.aliyuncs.com/20260320_rsedu/default_avatar.jpg",
 
   basic: {
     title: "基本信息",

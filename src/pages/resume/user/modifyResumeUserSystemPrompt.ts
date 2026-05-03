@@ -1,4 +1,4 @@
-import { iResumeFormData } from "../resume.utils";
+import { type iResumeFormData } from "../resume.utils";
 
 export const modifyResumeUserSystemPrompt = (sourceCode: string, resumeJsonData: iResumeFormData) => `
 

@@ -1,7 +1,7 @@
 import Axios from "axios";
 import env from "./env";
 import {showError} from "../utils/showError";
-import {iTokenService} from "./createTokenService";
+import type {iTokenService} from "./createTokenService";
 import {login} from "./login";
 
 export function createHttp(tokenService: iTokenService, defaultSetToken: boolean) {

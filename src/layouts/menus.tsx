@@ -1,4 +1,4 @@
-import { MenuProps } from "antd";
+import type { MenuProps } from "antd";
 import { router } from "./routes";
 import React from "react";
 import HomeOutlined from "@ant-design/icons/HomeOutlined";

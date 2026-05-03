@@ -1,10 +1,11 @@
-import {createBrowserRouter, Navigate, RouteObject, RouterProvider} from "react-router";
+import {createBrowserRouter, Navigate, type RouteObject, RouterProvider} from "react-router";
 import {Alert} from "antd";
 import {DynamicPage} from "../components/DynamicPage";
 import {LayoutPages} from "./LayoutPages";
 import {LayoutPrivate} from "./LayoutPrivate";
 import {LayoutPublic} from "./LayoutPublic";
 import React from "react";
+import {PUBLIC_PATH} from "../AppService/env.ts";
 
 export const routes: RouteObject[] = [
   {
@@ -33,7 +34,6 @@ export const routes: RouteObject[] = [
   }
 ];
 
-const publicPath = __webpack_public_path__;
-export const router = createBrowserRouter(routes, { basename: publicPath.endsWith('/') ? publicPath.slice(0, -1) : publicPath });
+export const router = createBrowserRouter(routes, { basename: PUBLIC_PATH.endsWith('/') ? PUBLIC_PATH.slice(0, -1) : PUBLIC_PATH });
 
 export const IndexApp = <RouterProvider router={router}/>;

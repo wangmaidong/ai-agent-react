@@ -1,4 +1,4 @@
-import { iUploadExternalData, useUploadService } from "./useUploadService";
+import { type iUploadExternalData, useUploadService } from "./useUploadService";
 import { useStableCallback } from "./useStableCallback";
 import { compressCanvas } from "../utils/compressCanvas";
 import { base64toFile } from "../utils/base64ToFile";

@@ -3,7 +3,7 @@ import { notification } from "antd";
 import { useStableCallback } from "./useStableCallback";
 import { pathJoin } from "@peryl/utils/pathJoin";
 import env from "../AppService/env";
-import { iBaseRecord } from "../utils/type.utils";
+import type { iBaseRecord } from "../utils/type.utils";
 
 export function useUploadService() {
 

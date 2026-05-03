@@ -1,5 +1,5 @@
 import React from "react";
-import { iResumeTemplateRecord } from "./resume.utils";
+import { type iResumeTemplateRecord } from "./resume.utils";
 import { useMounted } from "../../uses/useMounted";
 import { PageContainer } from "../../components/PageContainer/PageContainer";
 import { CardList } from "../../components/CardList/CardList";

@@ -1,6 +1,6 @@
 import {pathJoin} from "@peryl/utils/pathJoin";
 import './login-page.scss';
-import {Button, Checkbox, Form, Input, notification, Tabs, TabsProps} from "antd";
+import {Button, Checkbox, Form, Input, notification, Tabs, type TabsProps} from "antd";
 import {useState} from "react";
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import LockOutlined from '@ant-design/icons/LockOutlined';
@@ -16,10 +16,11 @@ import {getLocationInfo} from "../AppService/login";
 import {createTokenSaver} from "../AppService/createTokenSaver";
 import {router} from "../layouts/routes";
 import {useAppContext} from "../AppService/useAppService";
+import {PUBLIC_PATH} from "../AppService/env.ts";
 
 
-const logo = pathJoin(__webpack_public_path__, "/images/reimburse_logo.png");
-const backgroundImage = pathJoin(__webpack_public_path__, '/images/login_bg.png');
+const logo = pathJoin(PUBLIC_PATH, "/images/reimburse_logo.png");
+const backgroundImage = pathJoin(PUBLIC_PATH, '/images/login_bg.png');
 
 export default () => {
 

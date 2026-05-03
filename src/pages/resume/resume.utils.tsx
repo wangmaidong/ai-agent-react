@@ -1,5 +1,5 @@
-import { iBaseRecord } from "../../utils/type.utils";
-import { createWebEnums } from "../../utils/createWebEnums";
+import type {iBaseRecord} from "../../utils/type.utils";
+import {createWebEnums} from "../../utils/createWebEnums";
 
 /*---------------------------------------iResumeFormData start-------------------------------------------*/
 

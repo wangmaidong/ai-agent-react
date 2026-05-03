@@ -1,7 +1,7 @@
-import { defer, DFD } from '@peryl/utils/defer';
-import { PlainObject, SimpleFunction } from '@peryl/utils/event';
-import { pathJoin } from '@peryl/utils/pathJoin';
-import { LibraryLoader } from '../../utils/LibraryLoader';
+import {defer, type DFD} from '@peryl/utils/defer';
+import type {PlainObject, SimpleFunction} from '@peryl/utils/event';
+import {pathJoin} from '@peryl/utils/pathJoin';
+import {PUBLIC_PATH} from "../../AppService/env.ts";
 
 interface iMonacoRequireFunction {
   (deps: string[], handler: (modules: any[]) => void): void;
@@ -14,10 +14,10 @@ interface iMonacoRequireFunction {
 
 export const MonacoLoader = (() => {
   const MONACO_LOADER_PATH = pathJoin(
-    __webpack_public_path__,
+    PUBLIC_PATH,
     '/libs/monaco-editor-0.55.1/min/vs/loader.js'
   );
-  const MONACO_VS_PATH = pathJoin(__webpack_public_path__, '/libs/monaco-editor-0.55.1/min/vs');
+  const MONACO_VS_PATH = pathJoin(PUBLIC_PATH, '/libs/monaco-editor-0.55.1/min/vs');
 
   /**
    * 加载monaco中的loader函数

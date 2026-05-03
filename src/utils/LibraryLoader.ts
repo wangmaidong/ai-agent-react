@@ -3,6 +3,7 @@ import { toArray } from '@peryl/utils/toArray';
 import React from 'react';
 import styled from '@emotion/styled';
 import * as EmotionReact from '@emotion/react';
+import {PUBLIC_PATH} from "../AppService/env.ts";
 
 export interface iLibraryLoadConfig {
   name: string;
@@ -31,7 +32,7 @@ export const LibraryLoader = (() => {
 
   const loadFile = async (filePath: string) => {
     if (filePath.indexOf('http') !== 0) {
-      filePath = pathJoin(__webpack_public_path__, filePath);
+      filePath = pathJoin(PUBLIC_PATH, filePath);
     }
     if (!Win[GLOBAL_NAME.RES_FILE]) {
       Win[GLOBAL_NAME.RES_FILE] = {};

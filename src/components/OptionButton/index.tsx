@@ -1,5 +1,5 @@
 import { useModelState } from "../../uses/useModelState";
-import { Button, Dropdown, MenuProps, notification, Space } from "antd";
+import { Button, Dropdown, type MenuProps, notification, Space } from "antd";
 import LoadingOutlined from "@ant-design/icons/LoadingOutlined";
 import DownOutlined from "@ant-design/icons/DownOutlined";
 import { useState } from "react";

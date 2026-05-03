@@ -1,6 +1,6 @@
 import { useBeforeUnmount, useMounted } from "../../uses/useMounted";
 import { MonacoLoader } from "./monaco.utils";
-import { CSSProperties, useRef, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import { useModelState } from "../../uses/useModelState";
 import { createEffects } from "@peryl/utils/createEffects";
 import { classnames } from "@peryl/utils/classnames";

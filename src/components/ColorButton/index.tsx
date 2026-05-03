@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, ColorPicker, ColorPickerProps, Space } from "antd";
+import { Button, ColorPicker, type ColorPickerProps, Space } from "antd";
 import styled from "@emotion/styled";
 
 // 可选：利用 emotion 微调紧凑模式下的样式

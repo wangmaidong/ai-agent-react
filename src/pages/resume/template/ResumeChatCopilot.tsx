@@ -1,10 +1,10 @@
 import { CloudUploadOutlined, CommentOutlined, CopyOutlined, DislikeOutlined, LikeOutlined, OpenAIFilled, PaperClipOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import type { AttachmentsProps, BubbleListProps } from "@ant-design/x";
 import { Attachments, Bubble, Conversations, Prompts, Sender, Suggestion, Think, Welcome } from "@ant-design/x";
-import { BubbleListRef } from "@ant-design/x/es/bubble";
+import { type BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
-import { DefaultMessageInfo, OpenAIChatProvider, useXChat, useXConversations, XModelMessage, XModelParams, XModelResponse, XRequest } from "@ant-design/x-sdk";
-import { Button, Flex, GetProp, GetRef, Image, message, notification, Popover, Select, Space } from "antd";
+import { type DefaultMessageInfo, OpenAIChatProvider, useXChat, useXConversations,type  XModelMessage,type  XModelParams,type  XModelResponse, XRequest } from "@ant-design/x-sdk";
+import { Button, Flex, type GetProp,type  GetRef, Image, message, notification, Popover, Select, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import React, { useImperativeHandle, useMemo, useRef, useState } from "react";
@@ -18,7 +18,7 @@ import { isImageFile } from "../../../utils/isImageFile";
 import { getImageBase64 } from "../../../utils/getImageBase64";
 import { uuid } from "@peryl/utils/uuid";
 import { useModelState } from "../../../uses/useModelState";
-import { MessageInfo } from "@ant-design/x-sdk/es/x-chat";
+import { type MessageInfo } from "@ant-design/x-sdk/es/x-chat";
 import { doNothing } from "@peryl/utils/doNothing";
 
 export interface iResumeChatCopilotProps {

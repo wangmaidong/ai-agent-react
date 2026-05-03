@@ -4,7 +4,7 @@ import { createTokenService } from "./createTokenService";
 import { createHttp } from "./createHttp";
 import { useMounted } from "../uses/useMounted";
 import { showError } from "../utils/showError";
-import { iUserRecord } from "../utils/type.utils";
+import { type iUserRecord } from "../utils/type.utils";
 import { login } from "./login";
 import { useRootRenderService } from "../uses/useRootRender";
 

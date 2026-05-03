@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createEffects } from "@peryl/utils/createEffects";
 import { useStableCallback } from "../../uses/useStableCallback";
 import { Alert } from "antd";
-import { PlainObject } from "@peryl/utils/event";
+import type { PlainObject } from "@peryl/utils/event";
 import { getErrorMessage, showError } from "../../utils/showError";
 import { renderReactCode } from "./renderReactCode";
 import { LibraryLoader } from "../../utils/LibraryLoader";

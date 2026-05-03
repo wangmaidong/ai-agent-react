@@ -1,5 +1,5 @@
-import {iTokenSaver} from "./createTokenSaver";
-import {defer, DFD} from '@peryl/utils/defer';
+import type {iTokenSaver} from "./createTokenSaver";
+import {defer, type DFD} from '@peryl/utils/defer';
 import {login} from "./login";
 import Axios from "axios";
 import env from "./env";

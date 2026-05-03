@@ -4,7 +4,7 @@ import { useAppContext } from "../AppService/useAppService";
 import { useState } from "react";
 import { useMounted } from "./useMounted";
 import { router } from "../layouts/routes";
-import { iBaseRecord } from "../utils/type.utils";
+import type { iBaseRecord } from "../utils/type.utils";
 import dayjs from "dayjs";
 import { message, notification } from "antd";
 

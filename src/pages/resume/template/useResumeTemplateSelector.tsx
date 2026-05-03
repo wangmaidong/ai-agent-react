@@ -1,6 +1,6 @@
 import { defer } from "@peryl/utils/defer";
 import { useStableCallback } from "../../../uses/useStableCallback";
-import { iResumeTemplateRecord } from "../resume.utils";
+import { type iResumeTemplateRecord } from "../resume.utils";
 import { CardList } from "../../../components/CardList/CardList";
 import { produce } from "immer";
 import { notification,Modal } from "antd";

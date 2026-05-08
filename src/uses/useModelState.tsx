@@ -7,12 +7,14 @@ export function useModelState<T>(propsValue: T, propsEmit?: (value: T) => void, 
 
   // 2. 使用 Ref 保存最新的 config，避免 useEffect 依赖导致的不必要触发
   const configRef = useRef(config);
+  // eslint-disable-next-line
   configRef.current = config;
 
   // 3. 监听外部 props 变化 (受控逻辑)
   useEffect(() => {
     // 只有在 props 真的变化时才同步到内部状态
     if (propsValue !== modelValue) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModelValue(propsValue);
       configRef.current?.onPropsValueChange?.(propsValue);
     }

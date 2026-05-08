@@ -1,9 +1,11 @@
 import { MonacoUsageExample } from "../components/MonacoEditor/MonacoUsageExample";
 
-export default () => {
+export const HomePage = () => {
   return (
     <>
-      <MonacoUsageExample/>
+      <MonacoUsageExample />
     </>
   );
 };
+
+export default HomePage;

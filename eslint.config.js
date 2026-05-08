@@ -23,6 +23,7 @@ export default defineConfig([
       "no-useless-assignment": "off",
       "no-extra-boolean-cast": "off",
       "@typescript-eslint/no-unused-expressions": "off",
+      "prefer-const": "off",
     },
   },
 ]);

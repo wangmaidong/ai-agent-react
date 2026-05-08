@@ -22,7 +22,7 @@ import {PUBLIC_PATH} from "../AppService/env.ts";
 const logo = pathJoin(PUBLIC_PATH, "/images/reimburse_logo.png");
 const backgroundImage = pathJoin(PUBLIC_PATH, '/images/login_bg.png');
 
-export default () => {
+export default function LoginPage() {
 
   const [loginType, setLoginType] = useState<iLoginType>('account');
 
@@ -42,7 +42,7 @@ export default () => {
 
 export type iLoginType = 'account' | 'verification'
 
-const SwitchTabs = (props: { activeKey: iLoginType, onChange: (activate: iLoginType) => void }) => {
+function SwitchTabs(props: { activeKey: iLoginType, onChange: (activate: iLoginType) => void }) {
 
   const items: TabsProps['items'] = [
     {
@@ -59,7 +59,7 @@ const SwitchTabs = (props: { activeKey: iLoginType, onChange: (activate: iLoginT
   return <Tabs defaultActiveKey="1" items={items} onChange={props.onChange as any} activeKey={props.activeKey}/>;
 };
 
-const AccountLoginForm = () => {
+function AccountLoginForm() {
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [autoLogin, setAutoLogin] = useState(true);
@@ -127,7 +127,7 @@ const AccountLoginForm = () => {
   );
 };
 
-const VerificationLoginForm = () => {
+function VerificationLoginForm() {
   return (
     <Form size="large">
       <Form.Item name="phonenumber">
@@ -144,14 +144,14 @@ const VerificationLoginForm = () => {
   );
 };
 
-const LoginFormFooter = (
+function LoginFormFooter(
   props: {
     autoLogin?: boolean,
     setAutoLogin?: (autoLogin: boolean) => void,
     onLogin?: () => void,
     isLogin?: boolean
   }
-) => {
+) {
   return (
     <>
       <Form.Item>

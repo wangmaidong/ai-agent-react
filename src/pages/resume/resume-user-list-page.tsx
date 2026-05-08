@@ -13,11 +13,10 @@ import { LoadingCover } from "../../components/LoadingCover/LoadingCover";
 import { MonacoLoader } from "../../components/MonacoEditor/monaco.utils";
 import { useListPage } from "../../uses/useListPage";
 
-export default () => {
+export default function ResumeUserListPage() {
 
   const {
     recordList,
-    reloadData,
     isLoading,
     editRecord,
     createRecord,

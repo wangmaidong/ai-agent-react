@@ -16,11 +16,11 @@ import { useStableCallback } from "../../../uses/useStableCallback";
 import { modifyResumeTemplateSystemPrompt } from "./modifyResumeTemplateSystemPrompt";
 import { showError } from "../../../utils/showError";
 import { useSnapshot } from "../../../uses/useSnapshot";
-import { delay } from "@peryl/utils/delay";
+
 import { router } from "../../../layouts/routes";
 
 
-export default () => {
+export default function ResumeTemplateDetailPage() {
 
   const {
     isLoading,
@@ -33,9 +33,9 @@ export default () => {
     save,
   } = useDetailPage<Partial<iResumeTemplateRecord>>({
     module: "llm_resume_template",
-    onAfterReload: (record, saveType) => {
+    onAfterReload: (record, _saveType) => {
       /*初始化表单数据之后，根据编辑类型来重设viewMode*/
-      setViewMode(saveType === "insert" ? ResumeTempViewMode.code : ResumeTempViewMode.preview);
+      setViewMode(_saveType === "insert" ? ResumeTempViewMode.code : ResumeTempViewMode.preview);
     },
     getNewRecord: () => ({
       sourceCode: "",

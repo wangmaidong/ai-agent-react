@@ -3,7 +3,7 @@ import { useStableCallback } from "../../../uses/useStableCallback";
 import { type iResumeTemplateRecord } from "../resume.utils";
 import { CardList } from "../../../components/CardList/CardList";
 import { produce } from "immer";
-import { notification,Modal } from "antd";
+import { notification } from "antd";
 import { useListPage } from "../../../uses/useListPage";
 import { useModalService } from "../../../uses/useModalService";
 

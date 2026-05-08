@@ -6,7 +6,7 @@ import { defer } from "@peryl/utils/defer";
  */
 export const getImageBase64 = (file: File) => {
   const dfd = defer<string>();
-  let fr = new FileReader();
+  const fr = new FileReader();
   fr.onloadend = e => dfd.resolve(e.target!.result as any);
   fr.onerror = () => dfd.reject();
   fr.readAsDataURL(file);

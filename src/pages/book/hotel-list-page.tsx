@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { Button, Space } from 'antd';
 
-export default function () {
+export default function HotelListPage() {
   /*调用test接口，打印消耗的时间*/
   async function request_test() {
     const startTime = Date.now();

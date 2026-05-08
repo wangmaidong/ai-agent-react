@@ -3,7 +3,7 @@ import { createSimpleDate } from "@peryl/utils/createSimpleDate";
 
 export async function exportElement2Pdf(el: HTMLElement) {
   try {
-    // @ts-ignore
+    // @ts-expect-error - No type definitions for @peryl/dom-to-pdf
     const dom2pdf = (await import('@peryl/dom-to-pdf')).default;
     await new Promise<void>(resolve => {
       dom2pdf(el, {

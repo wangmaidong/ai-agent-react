@@ -1,6 +1,6 @@
 import { useDetailPage } from "../../../uses/useDetailPage";
 import { type iResumeUserRecord, ResumeTempViewMode, ResumeUserViewMode } from "../resume.utils";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ResumeTemplateDefaultData } from "./ResumeTemplateDefaultData";
 import { cloneDeep } from "lodash";
 import { Button, Card, Form, Input, Modal, notification, Segmented, Space } from "antd";
@@ -31,7 +31,7 @@ import PageSpin from "../../../components/PageSpin";
 import { doNothing } from "@peryl/utils/doNothing";
 import "./resume-user-detail-page.scss";
 
-export default () => {
+export default function ResumeUserDetailPage() {
 
   const {
     isLoading,
@@ -45,7 +45,7 @@ export default () => {
   } = useDetailPage<Partial<iResumeUserRecord>>({
     module: "llm_resume_user",
     getNewRecord: () => cloneDeep(ResumeTemplateDefaultData),
-    onAfterReload: (record, saveType) => {
+    onAfterReload: (record) => {
       record.resumeJsonData = JSON.parse(record.resumeJsonString ?? ResumeTemplateDefaultData.resumeJsonString);
     },
   });
@@ -53,9 +53,12 @@ export default () => {
   const [viewMode, setViewMode] = useState<typeof ResumeUserViewMode.TYPES>(ResumeUserViewMode.preview);
 
   /*拿到所有的表单数据*/
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const formData: iResumeUserRecord = Form.useWatch(null, form) ?? {};
   const formDataRef = useRef(formData);
-  formDataRef.current = formData;
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   /*用来生成快照预览图的dom对象引用*/
   const snapshotElementRef = useRef(null as null | HTMLDivElement);
@@ -96,8 +99,27 @@ export default () => {
   /*系统提示词*/
   const systemPrompt = useStableCallback(() => modifyResumeUserSystemPrompt(formData.sourceCode ?? "", formData.resumeJsonData));
 
+  /*---------------------------------------处理AI流式响应消息，主要处理更新简历文案内容-------------------------------------------*/
+  const bufferStringHandler = useBufferStringHandler({
+    setState: (dispatch) => {
+      const value = form.getFieldValue("resumeJsonData");
+      form.setFieldValue("resumeJsonData", dispatch(value));
+    },
+    onBeginProcess: () => {
+      /*每次修改简历内容的时候，先重置简历数据*/
+      form.setFieldValue("resumeJsonData", {});
+      /*强制将视图切换到简历表单视图，因为在流式修改简历信息过程中回频繁触发渲染更新，此时最好不显示preview以及code*/
+      setViewMode("data");
+    },
+    onFinishProcess: () => {
+      /*简历信息修改完毕，回到预览视图*/
+      setViewMode("preview");
+      notification.success({ description: "已经更新完毕！" });
+    },
+  });
+
   /*---------------------------------------处理AI的结果消息，主要是检测是否需要更新组件代码-------------------------------------------*/
-  const handleAiMessage = useStableCallback((message: string, question: string) => {
+  const handleAiMessage = useStableCallback((message: string) => {
     bufferStringHandler.onFinish();
     const startTag = "/*---CodeStart---*/";
     const endTag = "/*---CodeEnd---*/";
@@ -187,25 +209,6 @@ export default () => {
     } finally {
       setIsLoading(false);
     }
-  });
-
-  /*---------------------------------------处理AI流式响应消息，主要处理更新简历文案内容-------------------------------------------*/
-  const bufferStringHandler = useBufferStringHandler({
-    setState: (dispatch) => {
-      const value = form.getFieldValue("resumeJsonData");
-      form.setFieldValue("resumeJsonData", dispatch(value));
-    },
-    onBeginProcess: () => {
-      /*每次修改简历内容的时候，先重置简历数据*/
-      form.setFieldValue("resumeJsonData", {});
-      /*强制将视图切换到简历表单视图，因为在流式修改简历信息过程中回频繁触发渲染更新，此时最好不显示preview以及code*/
-      setViewMode("data");
-    },
-    onFinishProcess: () => {
-      /*简历信息修改完毕，回到预览视图*/
-      setViewMode("preview");
-      notification.success({ description: "已经更新完毕！" });
-    },
   });
 
   /*---------------------------------------AI翻译-------------------------------------------*/

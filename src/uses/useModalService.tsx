@@ -7,6 +7,7 @@ import { Button, Modal, type ModalProps, Space } from "antd";
 import { useMounted } from "./useMounted";
 import { LoadingCover } from "../components/LoadingCover/LoadingCover";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type iContentProps = {}
 type iContentInstance = { triggerConfirm: () => void, close: () => void };
 

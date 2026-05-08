@@ -43,7 +43,7 @@ export async function renderReactCode(
     // 并行执行代码转换和 React 模块加载
     // _Component: 转换后的组件函数，如果 code 为空则为 null
     // getResource("react"): 预加载 React 核心库供后续使用
-    let [_Component /*ReactDOM,*/ /*React*/] = await Promise.all([
+    const [_Component /*ReactDOM,*/ /*React*/] = await Promise.all([
       !code ? null : transformCode({ code, getResource }),
       // getResource('react-dom'),
       getResource("react"),
@@ -178,7 +178,6 @@ export async function transformCode(
   // - exports: 模块导出对象
   // - require: 自定义的依赖加载函数
   // - React: React 核心库
-  // eslint-disable-next-line no-new-func
   const fn = new Function("module,exports,require,React", output);
 
   // 初始化 CommonJS 模块结构
@@ -218,7 +217,7 @@ export async function transformCode(
  */
 export async function buildDependency(output: string, getResource: (name: string) => Promise<any>): Promise<((name: string) => any)> {
   // 存储所有需要加载的依赖模块名称
-  let names: string[] = [];
+  const names: string[] = [];
 
   // 正则表达式匹配所有的 require('module-name') 或 require("module-name") 调用
   const regexp = /require\(['"](.*)['"]\)/g;

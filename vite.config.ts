@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-// @ts-ignore
+// @ts-expect-error - No type definitions for vite-plugin-eslint
 import eslint from "vite-plugin-eslint";
 
 // https://vite.dev/config/

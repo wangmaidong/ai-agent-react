@@ -1,4 +1,4 @@
-import { Segmented } from "antd";
+
 
 /**
  * 【增强型 Web 枚举生成器】
@@ -45,9 +45,3 @@ export function createWebEnums<T extends Record<string, string>>(enumParam: T) {
   // 3. 合并对象并强制指定返回类型
   return Object.assign(keyMirror, base) as typeof base & { [K in Keys]: K } & { TYPES: Keys };
 }
-
-const ViewMode = createWebEnums({
-  preview: "预览",
-  code: "编码",
-  data: "数据",
-});

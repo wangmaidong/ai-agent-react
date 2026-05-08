@@ -55,7 +55,7 @@ interface ResumeEditorProps {
   form: any; // FormInstance
 }
 
-const ResumeEditor: React.FC<ResumeEditorProps> = ({ form }) => {
+const ResumeEditor: React.FC<ResumeEditorProps> = () => {
   return (
     <SectionContainer>
       {/* 1. 基础配置：标题与主题色 */}

@@ -3,8 +3,8 @@ import type { AttachmentsProps, BubbleListProps } from "@ant-design/x";
 import { Attachments, Bubble, Conversations, Prompts, Sender, Suggestion, Think, Welcome } from "@ant-design/x";
 import { type BubbleListRef } from "@ant-design/x/es/bubble";
 import XMarkdown, { type ComponentProps } from "@ant-design/x-markdown";
-import { type DefaultMessageInfo, OpenAIChatProvider, useXChat, useXConversations,type  XModelMessage,type  XModelParams,type  XModelResponse, XRequest } from "@ant-design/x-sdk";
-import { Button, Flex, type GetProp,type  GetRef, Image, message, notification, Popover, Select, Space } from "antd";
+import { type DefaultMessageInfo, OpenAIChatProvider, useXChat, useXConversations, type  XModelMessage, type  XModelParams, type  XModelResponse, XRequest } from "@ant-design/x-sdk";
+import { Button, Flex, type GetProp, type  GetRef, Image, message, notification, Popover, Select, Space } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import React, { useImperativeHandle, useMemo, useRef, useState } from "react";
@@ -20,6 +20,7 @@ import { uuid } from "@peryl/utils/uuid";
 import { useModelState } from "../../../uses/useModelState";
 import { type MessageInfo } from "@ant-design/x-sdk/es/x-chat";
 import { doNothing } from "@peryl/utils/doNothing";
+import { useAppContext } from "../../../AppService/useAppService.tsx";
 
 export interface iResumeChatCopilotProps {
   /*系统提示词*/
@@ -43,6 +44,8 @@ export interface iResumeChatCopilotInstance {
 }
 
 export const ResumeChatCopilot = React.forwardRef<iResumeChatCopilotInstance, iResumeChatCopilotProps>((props: iResumeChatCopilotProps, ref) => {
+
+  const { tokenService } = useAppContext();
 
   const { styles } = useCopilotStyle();
   const attachmentsRef = useRef<GetRef<typeof Attachments>>(null);
@@ -84,14 +87,12 @@ export const ResumeChatCopilot = React.forwardRef<iResumeChatCopilotInstance, iR
   /*定义一个不变的函数来处理 XRequest callback onUpdate*/
   const handleRequestUpdate = useStableCallback(async (
     chunk: any,
-    responseHeaders: Headers,
-    message: MessageInfo<any> | undefined,
   ) => {
     if (chunk.data === "[DONE]") {return;}
     try {
       const chunkObj = JSON.parse(chunk.data);
       props.handleAiUpdate?.(chunkObj.choices[0].delta.content);
-    } catch (e) {
+    } catch {
       notification.error({ description: `解析ChunkMessage失败：` + chunk.data });
     }
   });
@@ -99,6 +100,8 @@ export const ResumeChatCopilot = React.forwardRef<iResumeChatCopilotInstance, iR
   /*定义一个不变的函数来处理 XRequest middlewares onRequest*/
   const handleMiddlewareRequest = useStableCallback(async (baseURL: any, options: any) => {
     console.log("onRequest", JSON.parse(options.body as any).messages);
+    console.log(options);
+    options.headers["Authorization"] = `Bearer ${await tokenService.getToken()}`;
     if (!!props.systemPrompt) {
       const systemPrompt = typeof props.systemPrompt === "function" ? await props.systemPrompt() : props.systemPrompt;
       const jsonBody = JSON.parse(options.body as any);

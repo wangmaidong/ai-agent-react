@@ -21,6 +21,7 @@ const MultiLineTextarea: React.FC<MultiLineTextareaProps> = ({
     const nextValue = Array.isArray(value) ? value.join("\n") : "";
     // 只有当外部值和内部值真正不一致时才同步，防止输入过程中的干扰
     if (nextValue !== innerValue) {
+      // eslint-disable-next-line
       setInnerValue(nextValue);
     }
   }, [value, innerValue]);

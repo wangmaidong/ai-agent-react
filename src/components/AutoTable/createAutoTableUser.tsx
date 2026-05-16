@@ -6,6 +6,7 @@ import type { BatisQueryBody, BatisQueryResponse } from "./batis.type.tsx";
 import { showError } from "../../utils/showError.ts";
 import { useMounted } from "../../uses/useMounted.tsx";
 import { Table } from "antd";
+import { useLoadingState } from "../../uses/useLoadingState.ts";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
   return (useConfig: iAutoTableUseConfig) => {
@@ -35,7 +36,10 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       total: 0,
     }));
 
+    const { loading, isLoading } = useLoadingState();
+
     const load = useCallback(async (page: number, pageSize: number) => {
+      const closeLoading = loading();
       try {
         const resp = await http.post<BatisQueryResponse>(`/general/${runningConfig.module}/list`, {
           page: page,
@@ -46,8 +50,10 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
         setStatePagination({ pageSize, current: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
       } catch (e) {
         showError(e);
+      } finally {
+        closeLoading();
       }
-    }, [runningConfig.module, http]);
+    }, [runningConfig.module, http, loading]);
 
     const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -59,6 +65,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       <div>
         <Table
           dataSource={data}
+          loading={isLoading}
           pagination={{
             ...statePagination,
             showTotal: (total) => `共 ${total} 条数据`,
@@ -71,13 +78,14 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
         />
       </div>
     ), [
-      data, runningConfig.columns, load,
+      data, runningConfig.columns, load, isLoading,
       statePagination, runningConfig.paginationPageSizeOptions,
     ]);
 
     return {
 
       data, setData,
+      isLoading,
       content,
 
       load, reload,

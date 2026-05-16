@@ -1,23 +1,23 @@
-import ReactDOM from 'react-dom/client';
-import { IndexApp } from './layouts/routes';
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
-import './styles/index.scss';
-import { enableMockJs } from './mock/mock';
-import env from './AppService/env';
+import ReactDOM from "react-dom/client";
+import { IndexApp } from "./layouts/routes";
+import { ConfigProvider } from "antd";
+import zhCN from "antd/locale/zh_CN";
+import "./styles/index.scss";
+import { enableMockJs } from "./mock/mock";
+import env from "./AppService/env";
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <ConfigProvider
     locale={zhCN}
     theme={{
       token: {
-        fontFamily: 'PingFang SC',
+        fontFamily: "PingFang SC",
       },
     }}
   >
     {IndexApp}
-  </ConfigProvider>
+  </ConfigProvider>,
 );
 
 env.enableMockApi && enableMockJs();

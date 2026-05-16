@@ -2,7 +2,7 @@ import type { iAutoTableDefaultConfig, iAutoTableRunningConfig, iAutoTableUseCon
 import { useCallback, useMemo, useState } from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import { useAppContext } from "../../AppService/useAppService.tsx";
-import type { BatisQueryResponse } from "./batis.type.tsx";
+import type { BatisQueryBody, BatisQueryResponse } from "./batis.type.tsx";
 import { showError } from "../../utils/showError.ts";
 import { useMounted } from "../../uses/useMounted.tsx";
 import { Table } from "antd";
@@ -15,7 +15,10 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
     /*---------------------------------------config 模块-------------------------------------------*/
 
     const runningConfig = useMemo((): iAutoTableRunningConfig => {
+      const defaultPageSize = useConfig.pageSize ?? defaultConfig.pageSize;
       return {
+        loadOnStart: true,
+        paginationPageSizeOptions: (Array.from(new Set([5, 10, 20, 50, 100, defaultPageSize])) as number[]).sort((a, b) => a - b),
         ...defaultConfig,
         ...useConfig,
       };
@@ -25,33 +28,52 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
     const [data, setData] = useState([] as PlainObject[]);
 
-    const load = useCallback(async () => {
+    /*分页状态数据*/
+    const [statePagination, setStatePagination] = useState(() => ({
+      current: 1,
+      pageSize: runningConfig.pageSize,
+      total: 0,
+    }));
+
+    const load = useCallback(async (page: number, pageSize: number) => {
       try {
         const resp = await http.post<BatisQueryResponse>(`/general/${runningConfig.module}/list`, {
-          page: 0,
-          pageSize: runningConfig.pageSize,
-        });
+          page: page,
+          pageSize: pageSize,
+          withCount: true,
+        } satisfies BatisQueryBody);
         setData(resp.data.list ?? []);
+        setStatePagination({ pageSize, current: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
       } catch (e) {
         showError(e);
       }
-    }, [runningConfig.module, runningConfig.pageSize, http]);
+    }, [runningConfig.module, http]);
 
-    const reload = useCallback(() => load(), [load]);
+    const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
     useMounted(async () => {
-      reload();
+      runningConfig.loadOnStart && reload();
     });
 
     const content = useMemo(() => (
       <div>
         <Table
           dataSource={data}
+          pagination={{
+            ...statePagination,
+            showTotal: (total) => `共 ${total} 条数据`,
+            showSizeChanger: true,
+            pageSizeOptions: runningConfig.paginationPageSizeOptions,
+            onChange: (page, pageSize) => load(page - 1, pageSize),
+          }}
           columns={runningConfig.columns}
           rowKey="id"
         />
       </div>
-    ), [data, runningConfig.columns]);
+    ), [
+      data, runningConfig.columns, load,
+      statePagination, runningConfig.paginationPageSizeOptions,
+    ]);
 
     return {
 

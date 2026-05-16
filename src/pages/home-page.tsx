@@ -1,5 +1,6 @@
 import { useAutoTable } from "../components/AutoTable/useAutoTable.tsx";
 import { PageContainer } from "../components/PageContainer/PageContainer.tsx";
+import { Card } from "antd";
 
 export const HomePage = () => {
 
@@ -13,7 +14,9 @@ export const HomePage = () => {
 
   return (
     <PageContainer>
-      {autoTable.content}
+      <Card>
+        {autoTable.content}
+      </Card>
     </PageContainer>
   );
 };

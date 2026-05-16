@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
-// @ts-expect-error - No type definitions for vite-plugin-eslint
+// @ts-expect-error: vite-plugin-eslint 缺少类型定义
 import eslint from "vite-plugin-eslint";
+import path from "path";
+import checker from "vite-plugin-checker";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,17 +12,20 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [
-    react(),
+    react({}),
     eslint({
       failOnError: false,  // 不阻塞开发
       include: ["src/**/*.{js,jsx,ts,tsx}"],
     }),
+    checker({
+      typescript: {
+        tsconfigPath: "./tsconfig.app.json",
+      },
+      enableBuild: true,
+      terminal: true,
+    }),
   ],
-  css: {
-    preprocessorOptions: {
-      scss: {},
-    },
-  },
+  css: { preprocessorOptions: { scss: {} } },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

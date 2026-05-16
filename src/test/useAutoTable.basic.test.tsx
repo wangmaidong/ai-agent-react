@@ -53,7 +53,7 @@ describe("useAutoTable基本功能测试", () => {
       const autoTable = useAutoTable({
         module: "user",
         loadOnStart: false,
-        columns: [{ title: "用户名", dataIndex: "username" }, { title: "用户昵称", dataIndex: "fullName" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }, { type: "input", title: "用户昵称", dataIndex: "fullName" }],
       });
       return (
         <div>
@@ -77,7 +77,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
+        { page: 0, pageSize: 5, withCount: true },
       );
     });
 
@@ -93,7 +93,7 @@ describe("useAutoTable基本功能测试", () => {
       const autoTable = useAutoTable({
         module: "user",
         pageSize: 10,
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       return <div>{autoTable.content}</div>;
     }
@@ -103,7 +103,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 10, withCount: true }
+        { page: 0, pageSize: 10, withCount: true },
       );
     });
   });
@@ -114,7 +114,7 @@ describe("useAutoTable基本功能测试", () => {
     function TestComponent() {
       const autoTable = useAutoTable({
         module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
@@ -144,8 +144,8 @@ describe("useAutoTable基本功能测试", () => {
       const autoTable = useAutoTable({
         module: "user",
         columns: [
-          { title: "用户名", dataIndex: "username" },
-          { title: "用户昵称", dataIndex: "fullName" }
+          { type: "input", title: "用户名", dataIndex: "username" },
+          { type: "input", title: "用户昵称", dataIndex: "fullName" },
         ],
       });
       return <div>{autoTable.content}</div>;
@@ -165,7 +165,7 @@ describe("useAutoTable基本功能测试", () => {
     function TestComponent() {
       const autoTable = useAutoTable({
         module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
@@ -189,7 +189,7 @@ describe("useAutoTable基本功能测试", () => {
       const autoTable = useAutoTable({
         module: "user",
         loadOnStart: false,
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
@@ -225,7 +225,7 @@ describe("useAutoTable基本功能测试", () => {
     function TestComponent() {
       const autoTable = useAutoTable({
         module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       return <div>{autoTable.content}</div>;
     }
@@ -235,7 +235,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
+        { page: 0, pageSize: 5, withCount: true },
       );
     });
 
@@ -253,7 +253,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 1, pageSize: 5, withCount: true }
+        { page: 1, pageSize: 5, withCount: true },
       );
     });
   });
@@ -275,7 +275,7 @@ describe("useAutoTable基本功能测试", () => {
     function TestComponent() {
       const autoTable = useAutoTable({
         module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       return <div>{autoTable.content}</div>;
     }
@@ -285,7 +285,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
+        { page: 0, pageSize: 5, withCount: true },
       );
     });
 
@@ -303,7 +303,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 1, pageSize: 5, withCount: true }
+        { page: 1, pageSize: 5, withCount: true },
       );
     });
 
@@ -321,7 +321,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
+        { page: 0, pageSize: 5, withCount: true },
       );
     });
   });
@@ -343,7 +343,7 @@ describe("useAutoTable基本功能测试", () => {
     function TestComponent() {
       const autoTable = useAutoTable({
         module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }],
+        columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
       return <div>{autoTable.content}</div>;
     }
@@ -353,7 +353,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
+        { page: 0, pageSize: 5, withCount: true },
       );
     });
 
@@ -376,7 +376,7 @@ describe("useAutoTable基本功能测试", () => {
     await waitFor(() => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         "/general/user/list",
-        { page: 0, pageSize: 10, withCount: true }
+        { page: 0, pageSize: 10, withCount: true },
       );
     });
   });

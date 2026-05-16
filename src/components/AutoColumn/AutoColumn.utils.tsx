@@ -1,8 +1,7 @@
-import { Form, type FormInstance, type FormItemProps, Input, Select, Switch, type TableColumnType } from "antd";
+import { type FormInstance, type FormItemProps, type TableColumnType } from "antd";
 import React from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { Rule } from "antd/es/form";
-import { doNothing } from "@peryl/utils/doNothing";
 
 /*---------------------------------------types base-------------------------------------------*/
 
@@ -39,3 +38,32 @@ type iColEditable = boolean | ((record: PlainObject, index: number) => boolean)
 /*用于计算编辑时传递给Form.Item的属性*/
 type iColGetFormItemProps = (param: iColEditParam & { drawer: boolean }) => FormItemProps
 
+/*用来扩展列特殊类型*/
+export interface iAutoColumnExpander {}
+
+// 有点像python列表推导式
+export type iAutoColumnMapper = { [k in keyof iAutoColumnExpander]: (iAutoColumnExpander[k] & iAutoColumnBase & { type: k }) }
+
+// type iAutoColumn = iAutoColumnInput | iAutoColumnSelect | iAutoColumnToggle
+export type iAutoColumn = iAutoColumnMapper[keyof iAutoColumnExpander]
+
+// const columns: iAutoColumn[] = [
+//   { type: "input", title: "用户名", dataIndex: "username", key: "username" },
+//   { type: "toggle", trueValue: true, falseValue: false },
+//   { type: "select", title: "用户昵称", dataIndex: "fullName", key: "fullName", options: ["有效", "失效"] },
+// ];
+
+/*---------------------------------------separator-------------------------------------------*/
+
+// interface iData {
+//   input: string,
+//   select: number,
+//   toggle: boolean,
+// }
+
+//
+// type iData2 = {
+//   [k in keyof iData]: { type: k, value: iData[k] }
+// }
+
+// type iDataValues = iData[keyof iData]

@@ -7,8 +7,8 @@ export const HomePage = () => {
   const autoTable = useAutoTable({
     module: "user",
     columns: [
-      { title: "用户名", dataIndex: "username", key: "username" },
-      { title: "用户昵称", dataIndex: "fullName", key: "fullName" },
+      { type: "input", title: "用户名", dataIndex: "username", key: "username" },
+      { type: "select", options: [{ value: "选项一", label: "option_01" }], title: "用户昵称", dataIndex: "fullName", key: "fullName" },
     ],
   });
 

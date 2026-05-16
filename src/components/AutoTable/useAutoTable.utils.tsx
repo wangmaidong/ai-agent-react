@@ -1,7 +1,7 @@
 import React from "react";
 import type { PlainObject } from "@peryl/utils/event";
-import type { TableColumnType } from "antd";
 import type { TableProps } from "antd/es/table/InternalTable";
+import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
 
 /*---------------------------------------type-------------------------------------------*/
 
@@ -27,7 +27,7 @@ export interface iAutoTableDefaultConfig {
 // 调用useAutoTable时才能确定传入的参数类型
 export interface iAutoTableInputConfig {
   module: string,                                             /*对应后端通用模块地址*/
-  columns: TableColumnType[],                                 /*字段信息*/
+  columns: iAutoColumn[],                                     /*字段信息*/
   // columns: iAutoColumnType[],                              /*字段信息*/
   selectType?: "single" | "multiple",                         /*选择列类型：single单选，multiple多选*/
   operations?: iAutoTableConfigOperations,                    /*自定义渲染操作栏内容*/

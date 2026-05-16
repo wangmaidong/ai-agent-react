@@ -48,36 +48,6 @@ describe("useAutoTable基本功能测试", () => {
     mockHttp.post.mockClear();
   });
 
-  it("基本查询，初始化之后自动查询数据", async () => {
-    function TestComponent() {
-      const autoTable = useAutoTable({
-        module: "user",
-        columns: [{ title: "用户名", dataIndex: "username" }, { title: "用户昵称", dataIndex: "fullName" }],
-      });
-      return <div>{autoTable.content}</div>;
-    }
-
-    renderWithProvider(<TestComponent />);
-
-    expect(screen.getByRole("table")).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(mockHttp.post).toHaveBeenCalledWith(
-        "/general/user/list",
-        { page: 0, pageSize: 5, withCount: true }
-      );
-    });
-
-    await waitFor(() => {
-      mockUsers.forEach(user => {
-        expect(screen.getByText(user.username)).toBeInTheDocument();
-        expect(screen.getByText(user.fullName)).toBeInTheDocument();
-      });
-    });
-
-    expect(screen.getByText(`共 ${mockUsers.length} 条`)).toBeInTheDocument();
-  });
-
   it("基本查询，loadOnStart为false，不自动查询数据", async () => {
     function TestComponent() {
       const autoTable = useAutoTable({

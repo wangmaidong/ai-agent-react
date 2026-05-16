@@ -89,6 +89,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       content,
 
       load, reload,
+      runningConfig,
 
     };
   };

@@ -111,6 +111,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
     const tablePropsColumns = useMemo(() => {
       const columns = [...runningConfig.columns];
+      columns.push({ type: "input", width: undefined, dataIndex: "__fit__" });
       columns.push({ type: "operation" });
       return columns.map(col => {
         col = {

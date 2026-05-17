@@ -12,8 +12,10 @@ export function AutoTableRow(props: {
   const { record, index, ...leftProps } = props;
 
   const {
-    onClickRow: _onClickRow,
-    onDoubleClickRow: _onDoubleClickRow,
+    handler: {
+      onClickRow: _onClickRow,
+      onDoubleClickRow: _onDoubleClickRow,
+    },
   } = useAutoTableContext();
 
   const onClickRow = useCallback((e: React.MouseEvent) => {
@@ -59,8 +61,10 @@ function AutoTableRowTarget(
 ) {
 
   const {
-    editIdMapper,
-    formInstanceManager,
+    state: {
+      editIdMapper,
+      formInstanceManager,
+    },
   } = useAutoTableContext();
 
   const recordRef = useRef(record);
@@ -74,6 +78,7 @@ function AutoTableRowTarget(
   * 要修改这个对象的值，是我们要调用 autoTable.setData 去更新那一行数据之后，这里这个 props.record 才会更新；
   * 在保存完数据，调用 /general/{module}/(insert|update)，用返回的新数据来更新这个data数组中的record行数据对象；
   */
+  // eslint-disable-next-line react-hooks/refs
   const formData = Form.useWatch(undefined, form) ?? emptyObjRef.current;
   // console.log({ record: props.record, formData, });
 

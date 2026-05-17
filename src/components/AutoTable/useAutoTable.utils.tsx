@@ -2,8 +2,8 @@ import React, { useContext } from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { TableProps } from "antd/es/table/InternalTable";
 import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
-import type { iAutoTable } from "./createAutoTableUser.tsx";
 import type { FormInstance } from "antd";
+import type { iAppService } from "../../AppService/useAppService.tsx";
 
 /*---------------------------------------type-------------------------------------------*/
 
@@ -55,6 +55,13 @@ export type iAutoTableConfigButtons = { label?: string, onClick?: () => void, re
 export type iAutoTableUseConfig = iAutoTableInputConfig & Partial<iAutoTableDefaultConfig>   // useAutoTable配置参数类型
 export type iAutoTableRunningConfig = iAutoTableInputConfig & iAutoTableDefaultConfig        //  AutoTable内部运行时的配置参数类型
 
+export interface iAutoTable {
+  defaultConfig: iAutoTableDefaultConfig,
+  useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig),
+  appService: iAppService,
+  render: () => React.ReactNode,
+}
+
 // 是AutoTable向所有子孙组件透传的上下文
 export const AutoTableContext = React.createContext<iAutoTable | null>(null);
 
@@ -73,7 +80,7 @@ export interface iAutoTableRowProvideContextValue {
 /*行组件，要透传给单元格组件的上下文*/
 export const AutoTableRowContext = React.createContext<iAutoTableRowProvideContextValue | null>(null);
 
-export const useAutoTableRowContext = ():iAutoTableRowProvideContextValue => {
+export const useAutoTableRowContext = (): iAutoTableRowProvideContextValue => {
   const val = useContext(AutoTableRowContext);
   if (!val) {throw new Error("useAutoTableRowContext must be used within a AutoTableRowProvider");}
   return val;

@@ -5,20 +5,18 @@ import { useAppContext } from "../../AppService/useAppService.tsx";
 import type { BatisQueryBody, BatisQueryResponse } from "./batis.type.tsx";
 import { showError } from "../../utils/showError.ts";
 import { useMounted } from "../../uses/useMounted.tsx";
-import { type FormInstance, Table } from "antd";
+import { type FormInstance, Table, type TablePaginationConfig } from "antd";
 import { useLoadingState } from "../../uses/useLoadingState.ts";
 import { CreateDefaultColumnConfig } from "../AutoColumn/CreateDefaultColumnConfig.tsx";
 import { AutoTableCell } from "./components/AutoTableCell.tsx";
 import { getRowsMapper } from "../AutoColumn/AutoColumn.utils.tsx";
 import { AutoTableRow } from "./components/AutoTableRow.tsx";
 import { omit } from "@peryl/utils/omit.ts";
-import { getNewestValue } from "../../uses/getNewestValue.ts";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
   return (useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig)) => {
 
     const { http } = useAppContext();
-    console.warn(http);
 
     /*---------------------------------------config 模块-------------------------------------------*/
 
@@ -137,6 +135,25 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       });
     }, [runningConfig.columns]);
 
+    const tablePropsPagination = useMemo(() => ({
+      ...statePagination,
+      showTotal: (total) => `共 ${total} 条数据`,
+      showSizeChanger: true,
+      pageSizeOptions: runningConfig.paginationPageSizeOptions,
+      onChange: (page, pageSize) => load(page - 1, pageSize),
+    }) satisfies TablePaginationConfig, [
+      statePagination,
+      runningConfig.paginationPageSizeOptions,
+      load,
+    ]);
+
+    /*修改table.props.onRow，给AutoTableRow组件传递record以及index参数*/
+    const tablePropsOnRow = useCallback<any>((record: PlainObject, index: number) => ({ record, index }), []);
+
+    const tablePropsComponent = useMemo(() => ({
+      body: { row: AutoTableRow },
+    }), []);
+
     const render = useCallback(() => null as any, []);
 
     const autoTable = useMemo(() => ({
@@ -185,20 +202,10 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
           <Table
             dataSource={data}
             loading={isLoading}
-            pagination={{
-              ...statePagination,
-              showTotal: (total) => `共 ${total} 条数据`,
-              showSizeChanger: true,
-              pageSizeOptions: runningConfig.paginationPageSizeOptions,
-              onChange: (page, pageSize) => load(page - 1, pageSize),
-            }}
+            pagination={tablePropsPagination}
             columns={tablePropsColumns}
-            onRow={(record, index) => ({ record, index }) as any}
-            components={{
-              body: {
-                row: AutoTableRow,
-              },
-            }}
+            onRow={tablePropsOnRow}
+            components={tablePropsComponent}
             rowKey="id"
           />
         </div>

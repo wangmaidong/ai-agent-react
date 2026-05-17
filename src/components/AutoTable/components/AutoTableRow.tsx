@@ -1,6 +1,6 @@
 import type { PlainObject } from "@peryl/utils/event";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { AutoTableRowContext, useAutoTableContext } from "../useAutoTable.utils.tsx";
+import { AutoTableRowContext, type iAutoTableRowProvideContextValue, useAutoTableContext } from "../useAutoTable.utils.tsx";
 import { Form } from "antd";
 
 export function AutoTableRow(props: {
@@ -14,7 +14,6 @@ export function AutoTableRow(props: {
   const {
     onClickRow: _onClickRow,
     onDoubleClickRow: _onDoubleClickRow,
-    editIdMapper,
   } = useAutoTableContext();
 
   const onClickRow = useCallback((e: React.MouseEvent) => {
@@ -37,10 +36,35 @@ export function AutoTableRow(props: {
       </tr>),
     [onClickRow, onDoubleClickRow]);
 
-  // 当前行是否开启编辑状态
-  const isRowEditing = useMemo(() => !!props.record && !!editIdMapper[props.record.id], [props.record, editIdMapper]);
+  if (!record || index == null) {
+    // 空数据行
+    return tableRowContent;
+  } else {
+    // 数据行
+    return (
+      <AutoTableRowTarget record={record} index={index}>
+        {tableRowContent}
+      </AutoTableRowTarget>
+    );
+  }
 
-  const { formInstanceManager } = useAutoTableContext();
+}
+
+function AutoTableRowTarget(
+  { record, index, children }: {
+    record: PlainObject,
+    index: number,
+    children?: React.ReactNode
+  },
+) {
+
+  const {
+    editIdMapper,
+    formInstanceManager,
+  } = useAutoTableContext();
+
+  const recordRef = useRef(record);
+  recordRef.current = record;
 
   const [form] = Form.useForm();
   const emptyObjRef = useRef({});
@@ -53,40 +77,38 @@ export function AutoTableRow(props: {
   const formData = Form.useWatch(undefined, form) ?? emptyObjRef.current;
   // console.log({ record: props.record, formData, });
 
-  const propsRecord = props.record;
+  /*当前行是否为编辑状态*/
+  const autoTableRowEditable = useMemo(() => !!editIdMapper[record.id], [editIdMapper, record.id]);
 
   useEffect(() => {
-    if (!!propsRecord) {
-      formInstanceManager.set(propsRecord, form);
+    if (!!record) {
+      formInstanceManager.set(record, form);
     }
     return () => {
-      if (!!propsRecord) {formInstanceManager.delete(propsRecord);}
+      if (!!record) {formInstanceManager.delete(record);}
     };
-  }, [propsRecord, form]);
+  }, [record, form]);
 
   useEffect(() => {
-    if (!isRowEditing) {
-      form.setFieldsValue(propsRecord);
+    if (!autoTableRowEditable) {
+      form.setFieldsValue(recordRef.current);
     }
-  }, [isRowEditing, form, propsRecord]);
+  }, [autoTableRowEditable, form]);
 
-  if (record == null || index == null) {
-    return tableRowContent;
-  }
+  /*向子孙组件（就是单元格）透传的属性*/
+  const autoTableRowProvideValue = useMemo((): iAutoTableRowProvideContextValue => ({
+    editable: autoTableRowEditable,
+    form,
+    formData,
+  }), [autoTableRowEditable, form, formData]);
 
   return (
-    <AutoTableRowContext.Provider value={{ editable: isRowEditing, form: form, formData: formData }}>
-      {(() => {
-        if (!isRowEditing || !record || index == null) {
-          return tableRowContent;
-        } else {
-          return (
-            <Form form={form} component={false} initialValues={record}>
-              {tableRowContent}
-            </Form>
-          );
-        }
-      })()}
+    <AutoTableRowContext.Provider value={autoTableRowProvideValue}>
+      {!autoTableRowEditable ? (children) : (
+        <Form form={form} component={false} initialValues={record}>
+          {children}
+        </Form>
+      )}
     </AutoTableRowContext.Provider>
   );
 }

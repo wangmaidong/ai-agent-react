@@ -44,7 +44,17 @@ export function AutoTableRow(props: {
 
   const [form] = Form.useForm();
   const emptyObjRef = useRef({});
+  // formData 这个是我们实时编辑的数据对象
+  /*
+  * props.record 是原始行数据对象（是不可变数据）
+  * 要修改这个对象的值，是我们要调用 autoTable.setData 去更新那一行数据之后，这里这个 props.record 才会更新；
+  * 在保存完数据，调用 /general/{module}/(insert|update)，用返回的新数据来更新这个data数组中的record行数据对象；
+  */
   const formData = Form.useWatch(undefined, form) ?? emptyObjRef.current;
+  console.log({
+    record: props.record,
+    formData,
+  });
 
   const propsRecord = props.record;
 

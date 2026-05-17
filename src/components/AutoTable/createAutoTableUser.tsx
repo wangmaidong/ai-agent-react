@@ -12,6 +12,7 @@ import { AutoTableCell } from "./components/AutoTableCell.tsx";
 import { getRowsMapper } from "../AutoColumn/AutoColumn.utils.tsx";
 import { AutoTableRow } from "./components/AutoTableRow.tsx";
 import { omit } from "@peryl/utils/omit.ts";
+import { getNewestValue } from "../../uses/getNewestValue.ts";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
   return (useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig)) => {
@@ -81,18 +82,22 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
     /*---------------------------------------methods-------------------------------------------*/
 
-    const editRecord = useCallback((record: PlainObject | PlainObject[]) => {
+    const editRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
       const recordList = Array.isArray(record) ? record : [record];
+      // console.log("before", await getNewestValue(setStateUpdateIdMapper));
       setStateUpdateIdMapper(prevMapper => ({ ...prevMapper, ...getRowsMapper(recordList, { key: "id", value: () => true }) }));
+      // console.log("after", await getNewestValue(setStateUpdateIdMapper));
     }, []);
 
     const deleteRecord = useCallback((record: PlainObject) => {}, []);
 
     const saveRecord = useCallback((record: PlainObject) => {}, []);
 
-    const cancelEditRecord = useCallback((record: PlainObject | PlainObject[]) => {
+    const cancelEditRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
       const recordList = Array.isArray(record) ? record : [record];
+      // console.log("before", await getNewestValue(setStateUpdateIdMapper));
       setStateUpdateIdMapper(prevMapper => omit(prevMapper, recordList.map(i => i.id)));
+      // console.log("after", await getNewestValue(setStateUpdateIdMapper));
     }, []);
 
 

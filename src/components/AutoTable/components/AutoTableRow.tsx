@@ -51,10 +51,7 @@ export function AutoTableRow(props: {
   * 在保存完数据，调用 /general/{module}/(insert|update)，用返回的新数据来更新这个data数组中的record行数据对象；
   */
   const formData = Form.useWatch(undefined, form) ?? emptyObjRef.current;
-  console.log({
-    record: props.record,
-    formData,
-  });
+  // console.log({ record: props.record, formData, });
 
   const propsRecord = props.record;
 

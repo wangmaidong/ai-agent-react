@@ -9,7 +9,11 @@ export const HomePage = () => {
     columns: [
       { type: "input", title: "用户名", dataIndex: "username", key: "username", required: true },
       { type: "input", title: "用户名", dataIndex: "username", key: "username" },
-      { type: "input", title: "用户昵称", dataIndex: "fullName", key: "fullName" },
+      {
+        type: "input", title: "用户昵称", dataIndex: "fullName", key: "fullName",
+        width: 200,
+        rules: [{ pattern: /^hello/, message: "必须以hello开头" }],
+      },
     ],
   }));
 

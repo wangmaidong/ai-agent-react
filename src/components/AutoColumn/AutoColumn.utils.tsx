@@ -47,23 +47,25 @@ export type iAutoColumnMapper = { [k in keyof iAutoColumnExpander]: (iAutoColumn
 // type iAutoColumn = iAutoColumnInput | iAutoColumnSelect | iAutoColumnToggle
 export type iAutoColumn = iAutoColumnMapper[keyof iAutoColumnExpander]
 
-// const columns: iAutoColumn[] = [
-//   { type: "input", title: "用户名", dataIndex: "username", key: "username" },
-//   { type: "toggle", trueValue: true, falseValue: false },
-//   { type: "select", title: "用户昵称", dataIndex: "fullName", key: "fullName", options: ["有效", "失效"] },
-// ];
+// CreateDefaultColumnConfig 专门负责给列对象补充默认值
+export type iCreateDefaultColumnConfig = { [k in keyof iAutoColumnMapper]: (sourceColumn: iAutoColumnMapper[k]) => iAutoColumnMapper[k] }
 
-/*---------------------------------------separator-------------------------------------------*/
+/*---------------------------------------utils-------------------------------------------*/
 
-// interface iData {
-//   input: string,
-//   select: number,
-//   toggle: boolean,
-// }
-
-//
-// type iData2 = {
-//   [k in keyof iData]: { type: k, value: iData[k] }
-// }
-
-// type iDataValues = iData[keyof iData]
+/*将rows对象数组转化为一个mapper对象，key为每条数据的id，value通过getValue函数获取*/
+export function getRowsMapper<T = PlainObject>(
+  /*要遍历的数组*/
+  list: PlainObject[],
+  config: {
+    /*返回结果对象的key的值来源*/
+    key: string | ((obj: PlainObject) => string),
+    /*从对象中取值的函数*/
+    value: string | ((obj: PlainObject) => T),
+  },
+): Record<string, T> {
+  return list.reduce((prev, item) => {
+    const key = typeof config.key === "string" ? item[config.key] : config.key(item);
+    prev[key] = typeof config.value === "string" ? item[config.value] : config.value(item);
+    return prev;
+  }, {} as Record<string, T>);
+}

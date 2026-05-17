@@ -24,6 +24,7 @@ export default defineConfig([
       "no-extra-boolean-cast": "off",
       "@typescript-eslint/no-unused-expressions": "off",
       "prefer-const": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 ]);

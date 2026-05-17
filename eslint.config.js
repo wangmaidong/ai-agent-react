@@ -25,6 +25,7 @@ export default defineConfig([
       "@typescript-eslint/no-unused-expressions": "off",
       "prefer-const": "off",
       "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
 ]);

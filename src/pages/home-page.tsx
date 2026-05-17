@@ -7,13 +7,13 @@ import { CreateDefaultColumnConfig } from "../components/AutoColumn/CreateDefaul
 
 export const HomePage = () => {
 
-  const autoTable = useAutoTable({
+  const autoTable = useAutoTable(() => ({
     module: "user",
     columns: [
       { type: "input", title: "用户名", dataIndex: "username", key: "username" },
       { type: "select", options: [{ value: "选项一", label: "option_01" }], title: "用户昵称", dataIndex: "fullName", key: "fullName" },
     ],
-  });
+  }));
 
   useMounted(() => {
 
@@ -36,7 +36,7 @@ export const HomePage = () => {
   return (
     <PageContainer>
       <Card>
-        {autoTable.content}
+        {autoTable.render()}
       </Card>
     </PageContainer>
   );

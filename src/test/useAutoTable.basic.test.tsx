@@ -60,7 +60,7 @@ describe("useAutoTable基本功能测试", () => {
           <button data-testid="reload-btn" onClick={autoTable.reload}>
             手动加载
           </button>
-          {autoTable.content}
+          {autoTable.render()}
         </div>
       );
     }
@@ -95,7 +95,7 @@ describe("useAutoTable基本功能测试", () => {
         pageSize: 10,
         columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -118,7 +118,7 @@ describe("useAutoTable基本功能测试", () => {
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -148,7 +148,7 @@ describe("useAutoTable基本功能测试", () => {
           { type: "input", title: "用户昵称", dataIndex: "fullName" },
         ],
       });
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -169,7 +169,7 @@ describe("useAutoTable基本功能测试", () => {
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -193,7 +193,7 @@ describe("useAutoTable基本功能测试", () => {
       });
       // eslint-disable-next-line react-hooks/immutability
       tableRef.current = autoTable;
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -227,7 +227,7 @@ describe("useAutoTable基本功能测试", () => {
         module: "user",
         columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -277,7 +277,7 @@ describe("useAutoTable基本功能测试", () => {
         module: "user",
         columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);
@@ -345,7 +345,7 @@ describe("useAutoTable基本功能测试", () => {
         module: "user",
         columns: [{ type: "input", title: "用户名", dataIndex: "username" }],
       });
-      return <div>{autoTable.content}</div>;
+      return <div>{autoTable.render()}</div>;
     }
 
     renderWithProvider(<TestComponent />);

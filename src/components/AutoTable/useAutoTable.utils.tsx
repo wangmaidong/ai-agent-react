@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { TableProps } from "antd/es/table/InternalTable";
 import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
+import type { iAutoTable } from "./createAutoTableUser.tsx";
 
 /*---------------------------------------type-------------------------------------------*/
 
@@ -52,3 +53,11 @@ export type iAutoTableConfigButtons = { label?: string, onClick?: () => void, re
 
 export type iAutoTableUseConfig = iAutoTableInputConfig & Partial<iAutoTableDefaultConfig>   // useAutoTable配置参数类型
 export type iAutoTableRunningConfig = iAutoTableInputConfig & iAutoTableDefaultConfig        //  AutoTable内部运行时的配置参数类型
+
+export const AutoTableContext = React.createContext<iAutoTable | null>(null);
+
+export function useAutoTableContext(): iAutoTable {
+  const val = useContext(AutoTableContext);
+  if (!val) {throw new Error("useAutoTableContext must be used within a AutoTableProvider");}
+  return val;
+}

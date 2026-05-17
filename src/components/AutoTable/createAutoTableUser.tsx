@@ -1,5 +1,5 @@
 import { AutoTableContext, type iAutoTableDefaultConfig, type iAutoTableRunningConfig, type iAutoTableUseConfig } from "./useAutoTable.utils.tsx";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import { useAppContext } from "../../AppService/useAppService.tsx";
 import type { BatisQueryBody, BatisQueryResponse } from "./batis.type.tsx";
@@ -9,6 +9,9 @@ import { type FormInstance, Table } from "antd";
 import { useLoadingState } from "../../uses/useLoadingState.ts";
 import { CreateDefaultColumnConfig } from "../AutoColumn/CreateDefaultColumnConfig.tsx";
 import { AutoTableCell } from "./components/AutoTableCell.tsx";
+import { getRowsMapper } from "../AutoColumn/AutoColumn.utils.tsx";
+import { AutoTableRow } from "./components/AutoTableRow.tsx";
+import { omit } from "@peryl/utils/omit.ts";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
   return (useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig)) => {
@@ -78,13 +81,27 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
     /*---------------------------------------methods-------------------------------------------*/
 
-    const editRecord = useCallback((record: PlainObject) => {}, []);
+    const editRecord = useCallback((record: PlainObject | PlainObject[]) => {
+      const recordList = Array.isArray(record) ? record : [record];
+      setStateUpdateIdMapper(prevMapper => ({ ...prevMapper, ...getRowsMapper(recordList, { key: "id", value: () => true }) }));
+    }, []);
 
     const deleteRecord = useCallback((record: PlainObject) => {}, []);
 
     const saveRecord = useCallback((record: PlainObject) => {}, []);
 
-    const cancelEditRecord = useCallback((record: PlainObject) => {}, []);
+    const cancelEditRecord = useCallback((record: PlainObject | PlainObject[]) => {
+      const recordList = Array.isArray(record) ? record : [record];
+      setStateUpdateIdMapper(prevMapper => omit(prevMapper, recordList.map(i => i.id)));
+    }, []);
+
+
+    /*---------------------------------------handlers-------------------------------------------*/
+
+    const onClickRow = useCallback((data: { e: React.MouseEvent, record: PlainObject, index: number }) => {}, []);
+    const onDoubleClickRow = useCallback((data: { e: React.MouseEvent, record: PlainObject, index: number }) => {
+      editRecord(data.record);
+    }, [editRecord]);
 
     /*---------------------------------------lifecycle-------------------------------------------*/
 
@@ -133,6 +150,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       saveRecord,
       cancelEditRecord,
 
+      onClickRow, onDoubleClickRow,
       render,
     }), [
       stateConfig, setStateConfig,
@@ -151,6 +169,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       saveRecord,
       cancelEditRecord,
 
+      onClickRow, onDoubleClickRow,
       render,
     ]);
 
@@ -168,6 +187,12 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
               onChange: (page, pageSize) => load(page - 1, pageSize),
             }}
             columns={tablePropsColumns}
+            onRow={(record, index) => ({ record, index }) as any}
+            components={{
+              body: {
+                row: AutoTableRow,
+              },
+            }}
             rowKey="id"
           />
         </div>

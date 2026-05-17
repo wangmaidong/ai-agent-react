@@ -9,6 +9,7 @@ import type { iAutoTable } from "../useAutoTable.utils.tsx";
 import { getRowsMapper } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
+import { useRenderHook } from "../../../uses/useRenderHook.tsx";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -16,6 +17,18 @@ export function useAutoTableState(autoTable: iAutoTable) {
     runningConfig,
     appService: { http },
   } = autoTable;
+
+  /*---------------------------------------hooks-------------------------------------------*/
+
+  const bodyRender = useRenderHook();
+  const searchRender = useRenderHook();
+
+  const hooks = {
+    bodyRender,
+    searchRender,
+  };
+
+  /*---------------------------------------state-------------------------------------------*/
 
   const [data, setData] = useState([] as PlainObject[]);
 
@@ -197,16 +210,19 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   return {
     state,
+    hooks,
     methods,
   };
 }
 
 export type iAutoTableState = ReturnType<typeof useAutoTableState>["state"]
 export type iAutoTableMethods = ReturnType<typeof useAutoTableState>["methods"]
+export type iAutoTableHooks = ReturnType<typeof useAutoTableState>["hooks"]
 
 declare module "../useAutoTable.utils.tsx" {
   export interface iAutoTable {
     state: iAutoTableState,
     methods: iAutoTableMethods,
+    hooks: iAutoTableHooks,
   }
 }

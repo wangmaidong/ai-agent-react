@@ -36,7 +36,7 @@ export function AutoTableRow(props: {
           onDoubleClick={onDoubleClickRow}>
         {props.children}
       </tr>),
-    [onClickRow, onDoubleClickRow]);
+    [onClickRow, onDoubleClickRow, leftProps, props.children]);
 
   if (!record || index == null) {
     // 空数据行
@@ -68,6 +68,7 @@ function AutoTableRowTarget(
   } = useAutoTableContext();
 
   const recordRef = useRef(record);
+  // eslint-disable-next-line react-hooks/refs
   recordRef.current = record;
 
   const [form] = Form.useForm();
@@ -92,7 +93,7 @@ function AutoTableRowTarget(
     return () => {
       if (!!record) {formInstanceManager.delete(record);}
     };
-  }, [record, form]);
+  }, [record, form, formInstanceManager]);
 
   useEffect(() => {
     if (!autoTableRowEditable) {

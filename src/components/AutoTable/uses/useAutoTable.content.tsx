@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from "react";
-import { AutoTableContext, type iAutoTable } from "../useAutoTable.utils.tsx";
+import { type iAutoTable } from "../useAutoTable.utils.tsx";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { Table, type TablePaginationConfig } from "antd";
 import { AutoTableRow } from "../components/AutoTableRow.tsx";
 import { CreateDefaultColumnConfig } from "../../AutoColumn/CreateDefaultColumnConfig.tsx";
 import { AutoTableCell } from "../components/AutoTableCell.tsx";
+import type { iRenderMeta } from "../../../uses/useRenderHook.tsx";
 
 export function useAutoTableContent(autoTable: iAutoTable) {
 
@@ -12,6 +13,7 @@ export function useAutoTableContent(autoTable: iAutoTable) {
     runningConfig,
     state: { statePagination, data, isLoading },
     methods: { load },
+    hooks: { bodyRender },
 
   } = autoTable;
   const tablePropsColumns = useMemo(() => {
@@ -58,23 +60,29 @@ export function useAutoTableContent(autoTable: iAutoTable) {
     body: { row: AutoTableRow },
   }), []);
 
-  const render = useCallback(() => null as any, []);
-
-  return {
-    render: () => (
-      <AutoTableContext.Provider value={autoTable}>
-        <div>
-          <Table
-            dataSource={data}
-            loading={isLoading}
-            pagination={tablePropsPagination}
-            columns={tablePropsColumns}
-            onRow={tablePropsOnRow}
-            components={tablePropsComponent}
-            rowKey="id"
-          />
-        </div>
-      </AutoTableContext.Provider>
+  const bodyRenderMeta = useMemo((): iRenderMeta => ({
+    seq: 4,
+    key: "table",
+    content: () => (
+      <Table
+        dataSource={data}
+        loading={isLoading}
+        pagination={tablePropsPagination}
+        columns={tablePropsColumns}
+        onRow={tablePropsOnRow}
+        components={tablePropsComponent}
+        rowKey="id"
+      />
     ),
-  };
+  }), [
+    data, isLoading,
+    tablePropsPagination,
+    tablePropsColumns,
+    tablePropsOnRow,
+    tablePropsComponent,
+  ]);
+
+  bodyRender.use(bodyRenderMeta);
+
+  return {};
 }

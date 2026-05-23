@@ -124,7 +124,6 @@ export const useAutoTableButtons = (autoTable: iAutoTable) => {
     },
     // eslint-disable-next-line
   }), [showButtonBar, overrideButtonContent, ...buttonConfigs]);
-  console.log([showButtonBar, overrideButtonContent, ...buttonConfigs]);
 
   searchRender.use(searchRenderMeta);
 };

@@ -134,10 +134,9 @@ export function useAutoTableState(autoTable: iAutoTable) {
       };
       await onBeforeLoad.exec({ requestConfig });
       const resp = await http.request<BatisQueryResponse>(requestConfig);
-      await onAfterLoad.exec({ data: resp.data.list ?? [], resp });
-
       setData(resp.data.list ?? []);
       setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
+      await onAfterLoad.exec({ data: resp.data.list ?? [], resp });
     } catch (e) {
       showError(e);
     } finally {

@@ -1,3 +1,5 @@
+export { CreateDefaultColumnConfig } from "./components/AutoColumn/CreateDefaultColumnConfig.tsx";
+
 export type { iAutoColumnInput } from "./components/AutoColumn/col.input.tsx";
 export type { iAutoColumnSelect } from "./components/AutoColumn/col.select.tsx";
 export type { iAutoColumnToggle } from "./components/AutoColumn/col.toggle.tsx";

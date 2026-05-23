@@ -1,18 +1,18 @@
 {
   "name": "@peryl/agent",
   "private": false,
-  "version": "0.0.13",
+  "version": "0.0.16",
   "type": "module",
-  "main": "./dist/mian.js",
-  "module": "./dist/mian.js",
-  "types": "./dist/mian.d.ts",
+  "main": "./dist/main.js",
+  "module": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/mian.js",
-      "types": "./dist/mian.d.ts"
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
     }
   },
   "scripts": {

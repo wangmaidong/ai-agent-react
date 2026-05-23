@@ -31,9 +31,8 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [buttonConfigs] = useState([] as (iAutoTableConfigButton | null | undefined)[]);
   buttonConfigs.splice(0, buttonConfigs.length);
 
-  const [columnConfigs] = useState([] as iAutoColumn[]);
+  const [columnConfigs] = useState([] as (iAutoColumn | null | undefined)[]);
   columnConfigs.splice(0, columnConfigs.length);
-  columnConfigs.push(...runningConfig.columns);
 
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();

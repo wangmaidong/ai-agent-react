@@ -1,10 +1,13 @@
 import { OperationInlineRender } from "./OperationInlineRender.tsx";
 import { OperationInlineEditor } from "./OperationInlineEditor.tsx";
 import { CreateDefaultColumnConfig } from "../../../AutoColumn/CreateDefaultColumnConfig.tsx";
+import type { iAutoColumnMapper } from "../../../AutoColumn/AutoColumn.utils.tsx";
 
 declare module "../../../AutoColumn/AutoColumn.utils.tsx" {
   interface iAutoColumnExpander {operation: {};}
 }
+
+export type iAutoColumnOperation = iAutoColumnMapper["operation"];
 
 export function installColumnOperation() {
   CreateDefaultColumnConfig.operation = (col) => {

@@ -11,6 +11,7 @@ import { Space } from "antd";
 import "./auto-table.scss";
 import { useAutoTableButtons } from "./uses/useAutoTable.buttons.tsx";
 import { useCallback } from "react";
+import { useAutoTableColumn } from "./uses/useAutoTable.columns.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -84,6 +85,7 @@ GlobalAutoTableModuleRegistration.addModule(4, "filterSearch", useAutoTableFilte
 GlobalAutoTableModuleRegistration.addModule(5, "filterText", useAutoTableFilterText);
 GlobalAutoTableModuleRegistration.addModule(6, "content", useAutoTableContent);
 GlobalAutoTableModuleRegistration.addModule(7, "buttons", useAutoTableButtons);
+GlobalAutoTableModuleRegistration.addModule(8, "columns", useAutoTableColumn);
 
 /*
 * 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中

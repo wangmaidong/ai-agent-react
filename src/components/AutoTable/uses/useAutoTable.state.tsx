@@ -48,7 +48,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*分页状态数据*/
   const [statePagination, setStatePagination] = useState(() => ({
-    current: 1,
+    pageCurrent: 1,
     pageSize: runningConfig.pageSize,
     total: 0,
   }));
@@ -74,6 +74,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [overrideButtonContent, setOverrideButtonContent] = useState(null as null | React.ReactNode);
 
   useEffect(() => {
+    // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
     return () => {setOverrideButtonContent(null);};
   }, [isTableEditing]);
@@ -98,7 +99,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*page是从0开始的*/
   const load = useCallback(async (page?: number, pageSize?: number) => {
-    page = page ?? statePagination.current - 1;
+    page = page ?? statePagination.pageCurrent - 1;
     pageSize = pageSize ?? statePagination.pageSize;
     const closeLoading = loading();
     try {
@@ -108,13 +109,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
         withCount: true,
       } satisfies BatisQueryBody);
       setData(resp.data.list ?? []);
-      setStatePagination({ pageSize, current: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
+      setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
     } catch (e) {
       showError(e);
     } finally {
       closeLoading();
     }
-  }, [runningConfig.module, http, loading]);
+  }, [runningConfig.module, http, loading, statePagination]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -122,7 +123,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const getShowIndex = useCallback((record: PlainObject) => {
     const index = data.findIndex(i => i.id === record.id);
     if (index === -1) {return index;}
-    return (statePagination.current - 1) * statePagination.pageSize + index + 1;
+    return (statePagination.pageCurrent - 1) * statePagination.pageSize + index + 1;
   }, [data, statePagination]);
 
   const editRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
@@ -152,7 +153,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     } finally {
       closeLoading();
     }
-  }, [load]);
+  }, [load, runningConfig.module, http, loading]);
 
   /*保存行数据*/
   const requestUpsert = useCallback(async (
@@ -241,17 +242,17 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*取消行数据的编辑状态，如果是新建数据要删除*/
   const cancelEditRecord = useCallback(async (record?: PlainObject | PlainObject[]) => {
-    const recordList = !record ? data : Array.isArray(record) ? record : [record];
-    const recordIdList = recordList.map(i => i.id);
+    /*没有传递record，就说明是取消所有行的编辑动作，否则目标行数据的编辑动作*/
+    const targetRows = !record ? data : toArray(record);
+    /*将targetRows转成id mapper*/
+    const targetIdMapper = getRowsMapper(targetRows, { key: "id", value: () => true });
+    /*获取最新的StateCreateIdMapper，用于删除stateData中的新建数据*/
+    const newestStateCreateIdMapper = stateCreateIdMapper;
 
-    const createIdMapper = stateCreateIdMapper;
-    /*要把新建的数据，从data中删除*/
-    setData(prevData => prevData.filter(i => !createIdMapper[i.id]));
-
-    /*去掉操作数据的新建以及编辑标记*/
-    setStateUpdateIdMapper(prevMapper => omit(prevMapper, recordIdList));
-    setStateCreateIdMapper(prevMapper => omit(prevMapper, recordIdList));
-  }, [data]);
+    setData(prevList => prevList.filter(i => !(!!newestStateCreateIdMapper[i.id] && !!targetIdMapper[i.id])));
+    setStateUpdateIdMapper(prevMapper => !record ? {} : omit(prevMapper, Object.keys(targetIdMapper)));
+    setStateCreateIdMapper(prevMapper => !record ? {} : omit(prevMapper, Object.keys(targetIdMapper)));
+  }, [data, stateCreateIdMapper]);
 
   /*复制一行或者多行数据*/
   const copyRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
@@ -276,7 +277,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       }
     }
     return initialNewRecord;
-  }, [defaultNewRow, defaultNewRowId]);
+  }, [defaultNewRow, defaultNewRowId, nextId]);
 
   /*新建一条数据*/
   const createRecord = useCallback(async (initialValues?: PlainObject | PlainObject[]) => {
@@ -288,8 +289,9 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*保存数据*/
   const save = useCallback(async () => {
-
-  }, []);
+    const editRecords = data.filter(i => editIdMapper[i.id]);
+    editRecords.map(i => saveRecord(i));
+  }, [data, editIdMapper, saveRecord]);
 
   const methods = useMemo(() => ({
     load, reload, editRecord,
@@ -299,7 +301,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     copyRecord, createRecord, save,
   }), [
     load, reload, editRecord,
-    deleteRecord, saveRecord, copyRecord,
+    deleteRecord, saveRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,

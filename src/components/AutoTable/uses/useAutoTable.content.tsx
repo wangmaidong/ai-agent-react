@@ -41,7 +41,8 @@ export function useAutoTableContent(autoTable: iAutoTable) {
 
   /*设置table分页器*/
   const tablePropsPagination = useMemo((): TablePaginationConfig => ({
-    ...statePagination,
+    current: statePagination.pageCurrent,
+    total: statePagination.total,
     /*这里得取较大值，否则会导致新建数据时由于无法滚动导致底部的数据看不见*/
     pageSize: isTableEditing ? Math.max(statePagination.pageSize, data.length) : statePagination.pageSize,
     pageSizeOptions: runningConfig.paginationPageSizeOptions,

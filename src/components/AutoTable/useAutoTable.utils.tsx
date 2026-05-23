@@ -20,6 +20,10 @@ export interface iAutoTableDefaultConfig {
   showCreateButton?: boolean,         /*显示新建按钮*/
   showCopyButton?: boolean,           /*显示复制按钮*/
   showOperateColumn?: boolean,        /*显示操作列*/
+  showIndexColumn?: boolean,          /*显示索引列*/
+  showCheckColumn?: boolean,          /*显示多选列*/
+  showFilterForm?: boolean,           /*显示查询表单*/
+  filterFormDefaultVisible?: boolean, /*查询表单默认是否展开*/
   editRowOnDblClick?: boolean,        /*双击行的时候开启编辑状态*/
   showSearchBar?: boolean,            /*显示搜索栏*/
   showButtonBar?: boolean,            /*显示按钮栏*/
@@ -31,7 +35,6 @@ export interface iAutoTableDefaultConfig {
 export interface iAutoTableInputConfig {
   module: string,                                             /*对应后端通用模块地址*/
   columns: iAutoColumn[],                                     /*字段信息*/
-  // columns: iAutoColumnType[],                              /*字段信息*/
   selectType?: "single" | "multiple",                         /*选择列类型：single单选，multiple多选*/
   operations?: iAutoTableConfigOperations,                    /*自定义渲染操作栏内容*/
   defaultNewRow?: iAutoTableConfigDefaultNewRow,              /*默认新建行数据*/

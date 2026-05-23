@@ -7,11 +7,20 @@ import { BugOutlined, FileSearchOutlined } from "@ant-design/icons";
 
 export function useAutoTableFilterForm(autoTable: iAutoTable) {
 
+  const {
+    runningConfig: {
+      filterFormDefaultVisible,
+      showFilterForm,
+    },
+  } = autoTable;
   // 维护一个变量控制是否渲染查询表单
-  const [isShowFilterForm, setIsShowFilterForm] = useState(false);
+  const [isShowFilterForm, setIsShowFilterForm] = useState(!!filterFormDefaultVisible);
   const [testCount, setTestCount] = useState(100);
 
   const bodyRenderMeta = useMemo((): iRenderMeta | null => {
+    if (!showFilterForm) {
+      return null;
+    }
     if (!isShowFilterForm) {
       return null;
     }
@@ -59,7 +68,7 @@ export function useAutoTableFilterForm(autoTable: iAutoTable) {
   autoTable.hooks.bodyRender.use(bodyRenderMeta);
 
   // 用来展开，收起查询表单的按钮
-  const searchRenderMeta = useMemo((): iRenderMeta => ({
+  const searchRenderMeta = useMemo((): iRenderMeta | null => !showFilterForm ? null : ({
     key: "filterFormButton",
     seq: 2,
     content: <>

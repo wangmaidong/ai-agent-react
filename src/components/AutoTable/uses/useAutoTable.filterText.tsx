@@ -5,19 +5,19 @@ import { Tag } from "antd";
 
 export function useAutoTableFilterText(autoTable: iAutoTable) {
 
-  const renderMeta = useMemo((): iRenderMeta | null => {
-    return {
-      key: "filterText",
-      seq: 3,
-      content: (
-        <div>
-          <Tag>筛选条件展示</Tag>
-        </div>
-      ),
-    };
-  }, []);
-
-  autoTable.hooks.bodyRender.use(renderMeta);
+  // const renderMeta = useMemo((): iRenderMeta | null => {
+  //   return {
+  //     key: "filterText",
+  //     seq: 3,
+  //     content: (
+  //       <div>
+  //         <Tag>筛选条件展示</Tag>
+  //       </div>
+  //     ),
+  //   };
+  // }, []);
+  //
+  // autoTable.hooks.bodyRender.use(renderMeta);
 
   return {
     filterText: {},

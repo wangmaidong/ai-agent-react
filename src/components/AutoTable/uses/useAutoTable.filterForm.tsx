@@ -8,7 +8,7 @@ import { BugOutlined, FileSearchOutlined } from "@ant-design/icons";
 export function useAutoTableFilterForm(autoTable: iAutoTable) {
 
   // 维护一个变量控制是否渲染查询表单
-  const [isShowFilterForm, setIsShowFilterForm] = useState(true);
+  const [isShowFilterForm, setIsShowFilterForm] = useState(false);
   const [testCount, setTestCount] = useState(100);
 
   const bodyRenderMeta = useMemo((): iRenderMeta | null => {

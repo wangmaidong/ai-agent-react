@@ -9,6 +9,7 @@ export const menus: MenuItem[] = [
   { key: "/pages/home", icon: <HomeOutlined />, label: "系统首页" },
   { key: "/pages/resume/resume-template-list", icon: <HomeOutlined />, label: "简历模板" },
   { key: "/pages/resume/resume-user-list", icon: <HomeOutlined />, label: "用户简历" },
+  { key: "/pages/demo/demo-backup", icon: <HomeOutlined />, label: "通用表格" },
 
   // { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
   //

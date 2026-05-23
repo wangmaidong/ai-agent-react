@@ -8,7 +8,7 @@ import type { iAppService } from "../../AppService/useAppService.tsx";
 /*---------------------------------------types base-------------------------------------------*/
 
 export interface iAutoColumnBase extends TableColumnType {
-  seq?: number,                                               /*字段的显示顺序，左小右大*/
+  seq?: number,                                               /*字段的显示顺序，左小右大，左固定的字段seq自动-100，右固定的字段seq自动+100，默认seq=0*/
   dataIndex?: string,                                         /*dataIndex必须是字符串*/
   inlineRender?: iColInlineRender;                             /*非编辑状态下的渲染函数*/
   inlineEditor?: iColInlineEditor,                            /*行内编辑状态下的渲染函数*/

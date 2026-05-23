@@ -26,6 +26,13 @@ export function useAutoTableFilterSearch(autoTable: iAutoTable) {
 
   searchRender.use(searchRenderMeta);
 
+  /*空白占位，自动占满宽度，目的是为了把按钮组顶到右边*/
+  searchRender.use(useMemo(() => ({
+    key: "blank",
+    seq: 5,
+    content: <div className="filter-search-blank" style={{ flex: 1 }} />,
+  }), []));
+
 
   // 往表格纵向渲染钩子中，渲染搜索栏
   const bodyRenderMeta = useMemo((): iRenderMeta | null => {
@@ -33,14 +40,12 @@ export function useAutoTableFilterSearch(autoTable: iAutoTable) {
       key: "filterSearch",
       seq: 2,
       content: () => (
-        <div>
-          <Space>
-            {searchRender.render()}
-          </Space>
+        <div className="auto-table-filter-search">
+          {searchRender.render()}
         </div>
       ),
     };
-  }, []);
+  }, [searchRender]);
 
   bodyRender.use(bodyRenderMeta);
 

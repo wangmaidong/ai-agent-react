@@ -13,6 +13,19 @@ export function useAutoTableConfig(autoTable: iAutoTable) {
     const defaultPageSize = stateConfig.pageSize ?? defaultConfig.pageSize;
     return {
       loadOnStart: true,
+      selectRowOnClick: true,
+      selectRowOnLoad: true,
+      checkRowOnClick: true,
+
+      showEditButton: true,
+      showDeleteButton: true,
+      showCreateButton: true,
+      showCopyButton: true,
+      showOperateColumn: true,
+      editRowOnDblClick: true,
+      showSearchBar: true,
+      showButtonBar: true,
+
       paginationPageSizeOptions: (Array.from(new Set([5, 10, 20, 50, 100, defaultPageSize])) as number[]).sort((a, b) => a - b),
       ...defaultConfig,
       ...stateConfig,

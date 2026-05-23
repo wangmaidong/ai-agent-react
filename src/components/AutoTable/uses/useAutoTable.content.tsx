@@ -11,7 +11,7 @@ export function useAutoTableContent(autoTable: iAutoTable) {
 
   const {
     runningConfig,
-    state: { statePagination, data, isLoading },
+    state: { statePagination, data, isLoading, isTableEditing },
     methods: { load },
     hooks: { bodyRender },
 
@@ -39,19 +39,16 @@ export function useAutoTableContent(autoTable: iAutoTable) {
     });
   }, [runningConfig.columns]);
 
-  const tablePropsPagination = useMemo(() => {
-    return ({
-      ...statePagination,
-      showTotal: (total) => `共 ${total} 条数据`,
-      showSizeChanger: true,
-      pageSizeOptions: runningConfig.paginationPageSizeOptions,
-      onChange: (page, pageSize) => load(page - 1, pageSize),
-    }) satisfies TablePaginationConfig;
-  }, [
-    statePagination,
-    runningConfig.paginationPageSizeOptions,
-    load,
-  ]);
+  /*设置table分页器*/
+  const tablePropsPagination = useMemo((): TablePaginationConfig => ({
+    ...statePagination,
+    /*这里得取较大值，否则会导致新建数据时由于无法滚动导致底部的数据看不见*/
+    pageSize: isTableEditing ? Math.max(statePagination.pageSize, data.length) : statePagination.pageSize,
+    pageSizeOptions: runningConfig.paginationPageSizeOptions,
+    showSizeChanger: true,
+    showTotal: (total) => `共 ${total} 条`,
+    onChange: async (page, pageSize) => load(page - 1, pageSize),
+  }), [statePagination, data, runningConfig.paginationPageSizeOptions, load, isTableEditing]);
 
   /*修改table.props.onRow，给AutoTableRow组件传递record以及index参数*/
   const tablePropsOnRow = useCallback<any>((record: PlainObject, index: number) => ({ record, index }), []);
@@ -59,6 +56,7 @@ export function useAutoTableContent(autoTable: iAutoTable) {
   const tablePropsComponent = useMemo(() => ({
     body: { row: AutoTableRow },
   }), []);
+
 
   const bodyRenderMeta = useMemo((): iRenderMeta => ({
     seq: 4,

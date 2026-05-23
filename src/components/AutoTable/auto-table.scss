@@ -1,0 +1,7 @@
+.auto-table-filter-search {
+  display: flex;
+
+  & > * + * {
+    margin-left: 8px;
+  }
+}

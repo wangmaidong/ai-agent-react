@@ -37,18 +37,23 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const onClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
   const onDoubleClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
 
+  const onBeforeLoad = useEventHook<{ requestConfig: AxiosRequestConfig }>();
+  const onAfterLoad = useEventHook<{ data: PlainObject[], resp: any }>();
+  const onBeforeInsert = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterInsert = useEventHook<{ result: PlainObject | null | undefined, responseData: any }>();
+  const onBeforeUpdate = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterUpdate = useEventHook<{ result: PlainObject | null | undefined, responseData: any }>();
+  const onBeforeDelete = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterDelete = useEventHook<{ record: PlainObject, responseData: any }>();
+
   const hooks = useMemo(() => ({
-    bodyRender,
-    searchRender,
-    buttonConfigs,
-    onClickRow,
-    onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, onClickRow, onDoubleClickRow,
+    onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
+    onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
-    bodyRender,
-    searchRender,
-    buttonConfigs,
-    onClickRow,
-    onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, onClickRow, onDoubleClickRow,
+    onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
+    onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
 
   /*---------------------------------------state-------------------------------------------*/
@@ -112,11 +117,20 @@ export function useAutoTableState(autoTable: iAutoTable) {
     pageSize = pageSize ?? statePagination.pageSize;
     const closeLoading = loading();
     try {
-      const resp = await http.post<BatisQueryResponse>(`/general/${runningConfig.module}/list`, {
-        page: page,
-        pageSize: pageSize,
-        withCount: true,
-      } satisfies BatisQueryBody);
+
+      const requestConfig: AxiosRequestConfig = {
+        url: `/general/${runningConfig.module}/list`,
+        method: "post",
+        data: {
+          page: page,
+          pageSize: pageSize,
+          withCount: true,
+        } satisfies BatisQueryBody,
+      };
+      await onBeforeLoad.exec({ requestConfig });
+      const resp = await http.request<BatisQueryResponse>(requestConfig);
+      await onAfterLoad.exec({ data: resp.data.list ?? [], resp });
+
       setData(resp.data.list ?? []);
       setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
     } catch (e) {
@@ -143,14 +157,17 @@ export function useAutoTableState(autoTable: iAutoTable) {
   }, []);
 
   const deleteRecord = useCallback(async (record: PlainObject) => {
-    const requestConfig: AxiosRequestConfig = {
-      url: `/general/${runningConfig.module}/delete`,
-      method: "post",
-      data: { id: record.id },
-    };
     const closeLoading = loading();
     try {
+
+      const requestConfig: AxiosRequestConfig = {
+        url: `/general/${runningConfig.module}/delete`,
+        method: "post",
+        data: { id: record.id },
+      };
+      await onBeforeDelete.exec({ record, requestConfig });
       const resp = await http.request<BatisDeleteResponse>(requestConfig);
+      await onAfterDelete.exec({ record, responseData: resp.data });
       if (resp.data.affectedRows != null && resp.data.affectedRows >= 1) {
         message.success("删除成功！");
       } else {
@@ -172,10 +189,6 @@ export function useAutoTableState(autoTable: iAutoTable) {
       isCreatedRecord: boolean, // 是否为行内编辑新建的数据
     },
   ) => {
-
-    // 先获取行的索引
-    const showIndex = getShowIndex(sourceRecord);
-
     const closeLoading = loading();
     try {
 
@@ -197,8 +210,9 @@ export function useAutoTableState(autoTable: iAutoTable) {
         method: "post",
         data: { row: requestRecord },
       };
-
+      await (isCreatedRecord ? onBeforeInsert : onBeforeUpdate).exec({ record: requestRecord, requestConfig });
       const resp = await http.request<BatisInsertResponse | BatisUpdateResponse>(requestConfig);
+      await (isCreatedRecord ? onAfterInsert : onAfterUpdate).exec({ result: resp.data.result, responseData: resp.data });
       if (!resp.data.result) {
         throw new Error("保存返回数据为空");
       }
@@ -217,7 +231,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       closeLoading();
     }
 
-  }, [getShowIndex, http, loading, runningConfig.module]);
+  }, [http, loading, runningConfig.module]);
 
   const saveRecord = useCallback(async (sourceRecord: PlainObject, validate = true) => {
     const isCreatedRecord = !!stateCreateIdMapper[sourceRecord.id];

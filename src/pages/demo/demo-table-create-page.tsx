@@ -13,12 +13,6 @@ function Demo1() {
     ],
   }));
 
-  autoTable.hooks.onDoubleClickRow.use(
-    useCallback(({ record }) => {
-      message.info(`双击了行: ${record.fullName}`);
-    }, []),
-  );
-
   return (
     <PageContainer>
       <Card>

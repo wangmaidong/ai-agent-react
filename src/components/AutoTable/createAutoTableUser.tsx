@@ -52,6 +52,14 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       }, [editRowOnDblClick, editRecord]),
     );
 
+    autoTable.hooks.onBeforeLoad.use(
+      useCallback(() => {
+        if (autoTable.state.isTableEditing) {
+          throw new Error("请先保存表格数据，再查询。");
+        }
+      }, [autoTable.state.isTableEditing]),
+    );
+
     autoTable.render = () => (
       <AutoTableContext.Provider value={autoTable}>
         <div className="auto-table">

@@ -1,4 +1,4 @@
-import { AutoTableContext, type iAutoTable, type iAutoTableDefaultConfig, type iAutoTableUseConfig } from "./useAutoTable.utils.tsx";
+import { AutoTableContext, createAutoTableModuleRegistration, GlobalAutoTableModuleRegistration, type iAutoTable, type iAutoTableDefaultConfig, type iAutoTableUseConfig } from "./useAutoTable.utils.tsx";
 import { useAppContext } from "../../AppService/useAppService.tsx";
 import { useMounted } from "../../uses/useMounted.tsx";
 import { useAutoTableConfig } from "./uses/useAutoTable.config.tsx";
@@ -11,7 +11,11 @@ import { useAutoTableFilterText } from "./uses/useAutoTable.filterText.tsx";
 import { Space } from "antd";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
-  return (useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig)) => {
+
+  /*局部的模块注册器*/
+  const localAutoTableModuleRegistration = createAutoTableModuleRegistration();
+
+  const useAutoTable = (useConfig: iAutoTableUseConfig | (() => iAutoTableUseConfig)) => {
 
     const appService = useAppContext();
 
@@ -22,13 +26,10 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       appService,
     } as any;
 
-    Object.assign(autoTable, useAutoTableConfig(autoTable));
-    Object.assign(autoTable, useAutoTableState(autoTable));
-    Object.assign(autoTable, useAutoTableHandler(autoTable));
-    Object.assign(autoTable, useAutoTableFilterForm(autoTable));
-    Object.assign(autoTable, useAutoTableFilterSearch(autoTable));
-    Object.assign(autoTable, useAutoTableFilterText(autoTable));
-    Object.assign(autoTable, useAutoTableContent(autoTable));
+    localAutoTableModuleRegistration.useModule({
+      autoTable,
+      prevMapper: GlobalAutoTableModuleRegistration.moduleMapper,
+    });
 
     /*---------------------------------------lifecycle-------------------------------------------*/
 
@@ -48,4 +49,15 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
     return autoTable;
   };
+
+  return Object.assign(useAutoTable, localAutoTableModuleRegistration);
+
 }
+
+GlobalAutoTableModuleRegistration.addModule(1, "config", useAutoTableConfig);
+GlobalAutoTableModuleRegistration.addModule(2, "state", useAutoTableState);
+GlobalAutoTableModuleRegistration.addModule(3, "handler", useAutoTableHandler);
+GlobalAutoTableModuleRegistration.addModule(4, "filterForm", useAutoTableFilterForm);
+GlobalAutoTableModuleRegistration.addModule(5, "filterSearch", useAutoTableFilterSearch);
+GlobalAutoTableModuleRegistration.addModule(6, "filterText", useAutoTableFilterText);
+GlobalAutoTableModuleRegistration.addModule(7, "content", useAutoTableContent);

@@ -4,6 +4,7 @@ import type { TableProps } from "antd/es/table/InternalTable";
 import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
 import type { FormInstance } from "antd";
 import type { iAppService } from "../../AppService/useAppService.tsx";
+import { insertSort } from "@peryl/utils/insertSort.ts";
 
 /*---------------------------------------type-------------------------------------------*/
 
@@ -85,3 +86,54 @@ export const useAutoTableRowContext = (): iAutoTableRowProvideContextValue => {
   if (!val) {throw new Error("useAutoTableRowContext must be used within a AutoTableRowProvider");}
   return val;
 };
+
+export interface iAutoTableModuleMeta {
+  seq: number,
+  key: string,
+  hookFunc: (autoTable: iAutoTable) => any
+}
+
+export type iAutoTableModuleMapper = Record<string, iAutoTableModuleMeta | null | undefined>
+
+export function createAutoTableModuleRegistration() {
+
+  const moduleMapper: iAutoTableModuleMapper = {};
+
+  /*添加模块*/
+  const addModule = (seq: number, key: string, hookFunc: iAutoTableModuleMeta["hookFunc"]) => {
+    moduleMapper[key] = { seq, key, hookFunc };
+  };
+
+  /*给autoTable对象安装模块*/
+  const useModule = (
+    {
+      autoTable,
+      prevMapper,
+      nextMapper,
+    }: {
+      autoTable: iAutoTable,
+      prevMapper?: iAutoTableModuleMapper, /*默认的模块*/
+      nextMapper?: iAutoTableModuleMapper, /*覆盖的模块*/
+      // moduleMapper 是内部的模块
+    },
+  ) => {
+    let modules = Object.values({
+      ...prevMapper,
+      ...moduleMapper,
+      ...nextMapper,
+    }).filter(i => i != null);
+    modules = insertSort(modules, (a, b) => a.seq > b.seq);
+    modules.forEach(item => {
+      Object.assign(autoTable, item.hookFunc(autoTable));
+    });
+  };
+
+  return {
+    addModule,
+    useModule,
+    moduleMapper,
+  };
+}
+
+/*全局的AutoTable模块注册器*/
+export const GlobalAutoTableModuleRegistration = createAutoTableModuleRegistration();

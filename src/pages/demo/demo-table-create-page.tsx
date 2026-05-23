@@ -1,6 +1,7 @@
 import { useAutoTable } from "../../components/AutoTable/useAutoTable.tsx";
 import { PageContainer } from "../../components/PageContainer/PageContainer.tsx";
-import { Card } from "antd";
+import { Card, message } from "antd";
+import { useCallback } from "react";
 
 function Demo1() {
   const autoTable = useAutoTable(() => ({
@@ -11,6 +12,12 @@ function Demo1() {
       { type: "input", title: "用户昵称", dataIndex: "fullName" },
     ],
   }));
+
+  autoTable.hooks.onDoubleClickRow.use(
+    useCallback(({ record }) => {
+      message.info(`双击了行: ${record.fullName}`);
+    }, []),
+  );
 
   return (
     <PageContainer>

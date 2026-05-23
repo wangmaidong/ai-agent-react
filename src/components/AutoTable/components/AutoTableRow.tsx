@@ -2,6 +2,7 @@ import type { PlainObject } from "@peryl/utils/event";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { AutoTableRowContext, type iAutoTableRowProvideContextValue, useAutoTableContext } from "../useAutoTable.utils.tsx";
 import { Form } from "antd";
+import { findParentElement } from "@peryl/utils/findParentElement.ts";
 
 export function AutoTableRow(props: {
   children?: React.ReactNode,
@@ -11,24 +12,22 @@ export function AutoTableRow(props: {
 
   const { record, index, ...leftProps } = props;
 
-  const {
-    handler: {
-      onClickRow: _onClickRow,
-      onDoubleClickRow: _onDoubleClickRow,
-    },
-  } = useAutoTableContext();
+  const { hooks } = useAutoTableContext();
 
-  const onClickRow = useCallback((e: React.MouseEvent) => {
-    if ((!!record && index != null)) {
-      _onClickRow({ e, record, index });
-    }
-  }, [_onClickRow, record, index]);
+  const onClickRow = useCallback(async (e: React.MouseEvent) => {
+    if (!record || index == null) {return;}
+    /*如果说点击的元素是input，或者button标签，我们不会派发 hook.onClickRow 事件*/
+    const editElement = findParentElement(e.target as any, (el) => el.tagName === "BUTTON" || el.tagName === "INPUT", true);
+    if (!!editElement) {return;}
+    await hooks.onClickRow.exec({ e, record });
+  }, [hooks, record, index]);
 
-  const onDoubleClickRow = useCallback((e: React.MouseEvent) => {
-    if ((!!record && index != null)) {
-      _onDoubleClickRow({ e, record, index });
-    }
-  }, [_onDoubleClickRow, record, index]);
+  const onDoubleClickRow = useCallback(async (e: React.MouseEvent) => {
+    if (!record || index == null) {return;}
+    const editElement = findParentElement(e.target as any, (el) => el.tagName === "BUTTON" || el.tagName === "INPUT", true);
+    if (!!editElement) {return;}
+    await hooks.onDoubleClickRow.exec({ e, record });
+  }, [hooks, record, index]);
 
   const tableRowContent = useMemo(() => (
       <tr {...leftProps}

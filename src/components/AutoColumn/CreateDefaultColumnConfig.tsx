@@ -4,6 +4,7 @@ import { installColumnSelect } from "./col.select.tsx";
 import { installColumnToggle } from "./col.toggle.tsx";
 import { installColumnOperation } from "../AutoTable/standard/operation/col.operate.tsx";
 import { installColumnIndex } from "../AutoTable/standard/index/col.index.tsx";
+import { installColumnCheck } from "../AutoTable/standard/check/col.check.tsx";
 
 export const CreateDefaultColumnConfig: iCreateDefaultColumnConfig = {} as any;
 
@@ -12,3 +13,4 @@ installColumnSelect();
 installColumnToggle();
 installColumnOperation();
 installColumnIndex();
+installColumnCheck();

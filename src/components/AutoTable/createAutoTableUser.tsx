@@ -13,6 +13,7 @@ import { useAutoTableButtons } from "./uses/useAutoTable.buttons.tsx";
 import { useCallback } from "react";
 import { useAutoTableColumn } from "./uses/useAutoTable.columns.tsx";
 import { useAutoTableSingleSelect } from "./uses/useAutoTable.singleSelect.tsx.tsx";
+import { useAutoTableMultiSelect } from "./uses/useAutoTable.multiSelect.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -88,6 +89,7 @@ GlobalAutoTableModuleRegistration.addModule(6, "content", useAutoTableContent);
 GlobalAutoTableModuleRegistration.addModule(7, "buttons", useAutoTableButtons);
 GlobalAutoTableModuleRegistration.addModule(8, "columns", useAutoTableColumn);
 GlobalAutoTableModuleRegistration.addModule(9, "singleSelect", useAutoTableSingleSelect);
+GlobalAutoTableModuleRegistration.addModule(10, "multipleSelect", useAutoTableMultiSelect);
 
 /*
 * 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中

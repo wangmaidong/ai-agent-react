@@ -101,6 +101,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const state = useMemo(() => ({
     data, setData,
     statePagination, setStatePagination,
+    stateCreateIdMapper, stateUpdateIdMapper,
     editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
@@ -108,6 +109,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   }), [
     data, setData,
     statePagination, setStatePagination,
+    stateCreateIdMapper, stateUpdateIdMapper,
     editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
@@ -171,12 +173,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
       };
       await onBeforeDelete.exec({ record, requestConfig });
       const resp = await http.request<BatisDeleteResponse>(requestConfig);
-      await onAfterDelete.exec({ record, responseData: resp.data });
       if (resp.data.affectedRows != null && resp.data.affectedRows >= 1) {
         message.success("删除成功！");
       } else {
         message.error("删除失败！");
       }
+      await onAfterDelete.exec({ record, responseData: resp.data });
       await load();
     } catch (e) {
       showError(e);
@@ -216,7 +218,6 @@ export function useAutoTableState(autoTable: iAutoTable) {
       };
       await (isCreatedRecord ? onBeforeInsert : onBeforeUpdate).exec({ record: requestRecord, requestConfig });
       const resp = await http.request<BatisInsertResponse | BatisUpdateResponse>(requestConfig);
-      await (isCreatedRecord ? onAfterInsert : onAfterUpdate).exec({ result: resp.data.result, responseData: resp.data });
       if (!resp.data.result) {
         throw new Error("保存返回数据为空");
       }
@@ -229,6 +230,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
         setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
       }
       showMergeMessage.success(`保存成功！`);
+      await (isCreatedRecord ? onAfterInsert : onAfterUpdate).exec({ result: resp.data.result, responseData: resp.data });
     } catch (e) {
       showError(e);
     } finally {

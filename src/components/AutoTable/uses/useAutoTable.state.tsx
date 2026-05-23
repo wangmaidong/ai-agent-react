@@ -14,6 +14,7 @@ import { AutoTableSaveButtonBar } from "../components/AutoTableSaveButtonBar.tsx
 import { uuid } from "@peryl/utils/uuid";
 import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
 import { toArray } from "@peryl/utils/toArray";
+import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -201,7 +202,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       } else {
         setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
       }
-      message.success(`第${showIndex}行保存成功！`);
+      showMergeMessage.success(`保存成功！`);
     } catch (e) {
       showError(e);
     } finally {
@@ -254,11 +255,6 @@ export function useAutoTableState(autoTable: iAutoTable) {
     setStateCreateIdMapper(prevMapper => !record ? {} : omit(prevMapper, Object.keys(targetIdMapper)));
   }, [data, stateCreateIdMapper]);
 
-  /*复制一行或者多行数据*/
-  const copyRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
-
-  }, []);
-
   /*获取一条默认的新行数据*/
   const { defaultNewRow, defaultNewRowId } = runningConfig;
   const getDefaultNewRow = useCallback(async (initialValues?: PlainObject) => {
@@ -286,6 +282,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
     /*将新建的行数据标记为新建数据*/
     setStateCreateIdMapper(prevMapper => ({ ...prevMapper, ...getRowsMapper(initialRecords, { key: "id", value: () => true }) }));
   }, [getDefaultNewRow]);
+
+  /*复制一行或者多行数据*/
+  const copyRecord = useCallback(async (record: PlainObject) => {
+    const { id, createdAt, createdBy, updatedAt, updatedBy, ...leftRecord } = record;
+    return createRecord(leftRecord);
+  }, [createRecord]);
 
   /*保存数据*/
   const save = useCallback(async () => {

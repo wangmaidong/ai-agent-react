@@ -1,8 +1,20 @@
 {
-  "name": "ai-agent-react",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@peryl/agent",
+  "private": false,
+  "version": "0.0.13",
   "type": "module",
+  "main": "./dist/mian.js",
+  "module": "./dist/mian.js",
+  "types": "./dist/mian.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/mian.js",
+      "types": "./dist/mian.d.ts"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

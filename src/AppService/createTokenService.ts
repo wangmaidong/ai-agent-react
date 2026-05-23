@@ -1,6 +1,6 @@
-import type {iTokenSaver} from "./createTokenSaver";
-import {defer, type DFD} from '@peryl/utils/defer';
-import {login} from "./login";
+import type { iTokenSaver } from "./createTokenSaver";
+import { defer, type DFD } from "@peryl/utils/defer";
+import { login } from "./login";
 import Axios from "axios";
 import env from "./env";
 
@@ -41,17 +41,17 @@ export function createTokenService(tokenSaver: iTokenSaver) {
     /*4、调用refresh接口获取新的access_token*/
     try {
       const resp = await pureAxios.request<{ access_token: string, access_expires: number }>({
-        method: 'post',
-        url: '/refresh',
+        method: "post",
+        url: "/refresh",
         data: { "refresh_token": tokenInfo.refresh_token },
       });
-      console.log('resp.data', resp.data);
+      console.log("resp.data", resp.data);
       tokenSaver.saveAccessToken(resp.data.access_token, resp.data.access_expires);
       waitingDfd.resolve(resp.data.access_token);
       return resp.data.access_token;
     } catch (e) {
       console.error(e);
-      waitingDfd.reject(new Error('refresh token failed.'));
+      waitingDfd.reject(new Error("refresh token failed."));
       login();
       throw e;
     } finally {
@@ -60,6 +60,7 @@ export function createTokenService(tokenSaver: iTokenSaver) {
   };
   return {
     getToken,
+    tokenSaver,
   };
 }
 

@@ -6,7 +6,7 @@ import type { AxiosRequestConfig } from "axios";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
 import type { iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
-import { getRowsMapper } from "../../AutoColumn/AutoColumn.utils.tsx";
+import { getRowsMapper, type iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisDeleteResponse, BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
 import { useRenderHook } from "../../../uses/useRenderHook.tsx";
@@ -31,6 +31,10 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [buttonConfigs] = useState([] as (iAutoTableConfigButton | null | undefined)[]);
   buttonConfigs.splice(0, buttonConfigs.length);
 
+  const [columnConfigs] = useState([] as iAutoColumn[]);
+  columnConfigs.splice(0, columnConfigs.length);
+  columnConfigs.push(...runningConfig.columns);
+
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();
 
@@ -47,11 +51,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const onAfterDelete = useEventHook<{ record: PlainObject, responseData: any }>();
 
   const hooks = useMemo(() => ({
-    bodyRender, searchRender, buttonConfigs, onClickRow, onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs,
+    onClickRow, onDoubleClickRow,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
-    bodyRender, searchRender, buttonConfigs, onClickRow, onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs,
+    onClickRow, onDoubleClickRow,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
@@ -138,7 +144,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     } finally {
       closeLoading();
     }
-  }, [runningConfig.module, http, loading, statePagination]);
+  }, [runningConfig.module, http, loading, statePagination, onBeforeLoad, onAfterLoad]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -179,7 +185,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     } finally {
       closeLoading();
     }
-  }, [load, runningConfig.module, http, loading]);
+  }, [load, runningConfig.module, http, loading, onBeforeDelete, onAfterDelete]);
 
   /*保存行数据*/
   const requestUpsert = useCallback(async (
@@ -231,7 +237,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       closeLoading();
     }
 
-  }, [http, loading, runningConfig.module]);
+  }, [http, loading, runningConfig.module, onBeforeInsert, onBeforeUpdate, onAfterInsert, onAfterUpdate]);
 
   const saveRecord = useCallback(async (sourceRecord: PlainObject, validate = true) => {
     const isCreatedRecord = !!stateCreateIdMapper[sourceRecord.id];

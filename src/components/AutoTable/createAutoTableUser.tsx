@@ -84,3 +84,9 @@ GlobalAutoTableModuleRegistration.addModule(4, "filterSearch", useAutoTableFilte
 GlobalAutoTableModuleRegistration.addModule(5, "filterText", useAutoTableFilterText);
 GlobalAutoTableModuleRegistration.addModule(6, "content", useAutoTableContent);
 GlobalAutoTableModuleRegistration.addModule(7, "buttons", useAutoTableButtons);
+
+/*
+* 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中
+* 2. 在content模块中，用 useMemo 计算 columns（要让 columnConfigs 的计算尽量晚执行，抽离成子组件来计算这个useMemo）
+* 3. 在standardColumns模块中，对 columnConfigs 添加字段
+*/

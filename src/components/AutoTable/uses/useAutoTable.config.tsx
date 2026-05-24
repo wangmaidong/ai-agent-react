@@ -26,6 +26,7 @@ export function useAutoTableConfig(autoTable: iAutoTable) {
       showSearchBar: true,
       showButtonBar: true,
       showIndexColumn: true,
+      showFilterForm: true,
       autoFormGridCols: 1,
 
       paginationPageSizeOptions: (Array.from(new Set([5, 10, 20, 50, 100, defaultPageSize])) as number[]).sort((a, b) => a - b),

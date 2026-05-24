@@ -1,9 +1,12 @@
 import type { iAutoTable } from "../useAutoTable.utils.tsx";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { iRenderMeta } from "../../../uses/useRenderHook.tsx";
-import { Button, Col, Form, Input, Row, Space, Tooltip } from "antd";
-import chunk from "lodash/chunk";
-import { BugOutlined, FileSearchOutlined } from "@ant-design/icons";
+import { Button, Tooltip } from "antd";
+import { FileSearchOutlined } from "@ant-design/icons";
+import { AutoFilterForm } from "../components/AutoFilterForm.tsx";
+import type { iMultipleFilterInstance } from "../../AutoFilter/MultipleFilter.tsx";
+import type { iFilterTip } from "../../AutoFilter/AutoFilter.tip.tsx";
+import { mergeQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
 
 export function useAutoTableFilterForm(autoTable: iAutoTable) {
 
@@ -12,60 +15,40 @@ export function useAutoTableFilterForm(autoTable: iAutoTable) {
       filterFormDefaultVisible,
       showFilterForm,
     },
+    hooks: {
+      onQueryParam,
+      showTips,
+    },
   } = autoTable;
   // 维护一个变量控制是否渲染查询表单
-  const [isShowFilterForm, setIsShowFilterForm] = useState(!!filterFormDefaultVisible);
-  const [testCount, setTestCount] = useState(100);
+  const [isFilterFormVisible, setIsFilterFormVisible] = useState(!!filterFormDefaultVisible);
+  const [filterTipList, setFilterTipList] = useState(null as null | iFilterTip[]);
+  showTips.push(filterTipList);
 
-  const bodyRenderMeta = useMemo((): iRenderMeta | null => {
-    if (!showFilterForm) {
-      return null;
-    }
-    if (!isShowFilterForm) {
-      return null;
-    }
-    const colNum: number = 3;
-    const filterOptions: ({ title: string, dataIndex: string } | null)[] = [
-      { title: "用户名:" + testCount, dataIndex: "username" },
-      { title: "用户昵称", dataIndex: "fullName" },
-      { title: "手机号码", dataIndex: "phoneNumber" },
-      { title: "身份证号码", dataIndex: "idCard" },
-    ];
-    if (colNum != 1) {
-      const emptyNum = filterOptions.length % colNum;
-      if (emptyNum) {
-        filterOptions.push(...new Array(emptyNum).fill(null));
-      }
-    }
+  const multipleFilterRef = useRef(null as null | iMultipleFilterInstance);
+
+  const bodyRenderMeta = useMemo((): iRenderMeta => {
     return {
       key: "filterForm",
       seq: 1,
       content: (
-        <Form>
-          <Space vertical style={{ width: "100%" }}>
-            {chunk(filterOptions, colNum).map((group, groupIndex) => (
-              <Row gutter={12} key={groupIndex} style={{ display: "flex", alignItems: "center" }}>
-                {group.map((item, itemIndex) => (
-                  <Col span={24 / colNum} style={{ display: "flex", alignItems: "center" }} key={itemIndex}>
-                    {!item ? null : (
-                      <>
-                        <span style={{ width: "150px", textAlignLast: "justify" }}>{item.title}：</span>
-                        <Form.Item label={item.title} name={item.dataIndex} noStyle>
-                          <Input placeholder={item.title} />
-                        </Form.Item>
-                      </>
-                    )}
-                  </Col>
-                ))}
-              </Row>
-            ))}
-          </Space>
-        </Form>
+        <AutoFilterForm
+          multipleFilterRef={multipleFilterRef}
+          visible={isFilterFormVisible}
+        />
       ),
     };
-  }, [isShowFilterForm, testCount]);
+  }, [isFilterFormVisible]);
 
   autoTable.hooks.bodyRender.use(bodyRenderMeta);
+
+  onQueryParam.use(
+    useCallback(async (prevQueryParam) => {
+      const { queryParam, filterTipList } = await multipleFilterRef.current!.getFilterData();
+      setFilterTipList(filterTipList);
+      return mergeQueryParam(prevQueryParam, queryParam);
+    }, []),
+  );
 
   // 用来展开，收起查询表单的按钮
   const searchRenderMeta = useMemo((): iRenderMeta | null => !showFilterForm ? null : ({
@@ -73,10 +56,7 @@ export function useAutoTableFilterForm(autoTable: iAutoTable) {
     seq: 2,
     content: <>
       <Tooltip title="展开/收起查询表单">
-        <Button icon={<FileSearchOutlined />} onClick={() => setIsShowFilterForm(prev => !prev)} />
-      </Tooltip>
-      <Tooltip title="测试查询表单">
-        <Button icon={<BugOutlined />} onClick={() => setTestCount(prev => prev + 1)} />
+        <Button icon={<FileSearchOutlined />} onClick={() => setIsFilterFormVisible(prev => !prev)} />
       </Tooltip>
     </>,
   }), []);

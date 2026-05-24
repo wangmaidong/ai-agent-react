@@ -1,19 +1,32 @@
 import { createAutoTableUser } from "./createAutoTableUser.tsx";
-import { useMemo } from "react";
-import { Alert } from "antd";
-import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
+import React, { useMemo } from "react";
+import { Alert, message } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
 export const useAutoTable = createAutoTableUser({
   pageSize: 5,
 });
 
-// useAutoTable.addModule(100, "standardColumns", (autoTable) => {
-//   autoTable.hooks.columnConfigs.push(...useMemo((): iAutoColumn[] => [
-//     { type: "input", title: "ID", dataIndex: "id", editable: false },
-//     { type: "input", title: "创建时间", dataIndex: "createdAt", editable: false },
-//     { type: "input", title: "最后更新", dataIndex: "updatedAt", editable: false },
-//   ], []));
-// });
+useAutoTable.addModule(100, "standardColumns", (autoTable) => {
+  // autoTable.hooks.columnConfigs.push(...useMemo((): iAutoColumn[] => [
+  //   { type: "input", title: "ID", dataIndex: "id", editable: false },
+  //   { type: "input", title: "创建时间", dataIndex: "createdAt", editable: false },
+  //   { type: "input", title: "最后更新", dataIndex: "updatedAt", editable: false },
+  // ], []));
+  // const backupButtonConfigs = [...autoTable.hooks.buttonConfigs];
+  // autoTable.hooks.buttonConfigs.splice(0, backupButtonConfigs.length);
+  // autoTable.hooks.buttonConfigs.push(
+  //   ...backupButtonConfigs.map(item => {
+  //     return !!item && item.key === "inlineCreateButton" ? {
+  //       key: "inlineCreateButton",
+  //       label: "我们自定义的新建",
+  //       primary: false,
+  //       icon: <PlusOutlined />,
+  //       onClick: () => {message.info("我们自定义的");},
+  //     } : item;
+  //   }),
+  // );
+});
 
 export const useCrmTable = createAutoTableUser({
   pageSize: 5,

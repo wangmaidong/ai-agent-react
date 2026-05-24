@@ -11,7 +11,7 @@ import { Button, Tooltip } from "antd";
 export function useAutoTableVibeButton(autoTable: iAutoTable) {
 
   const {
-    state: { renderColumnsRef },
+    state: { renderColumnsRef, setSortData },
     methods: { reload },
     hooks: { searchRender, onQueryParam, showTips },
   } = autoTable;
@@ -49,11 +49,16 @@ export function useAutoTableVibeButton(autoTable: iAutoTable) {
           });
         }
         /*---------------------------------------处理Vibe排序-------------------------------------------*/
+        const sortJsonString = extractContentFromTags(message, "/*---SortStart---*/", "/*---SortEnd---*/");
+        if (!!sortJsonString) {
+          setSortData(JSON.parse(sortJsonString).orders);
+        }
+
         /*---------------------------------------处理Vibe字段配置-------------------------------------------*/
 
         if (
           !!searchJsonString
-          // || !!sortJsonString
+          || !!sortJsonString
           // || !!configJsonString
         ) {
           await delay(23);

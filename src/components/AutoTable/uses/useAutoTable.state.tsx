@@ -16,6 +16,8 @@ import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
 import { toArray } from "@peryl/utils/toArray";
 import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
 import { useEventHook } from "../../../uses/useEventHook.tsx";
+import type { iFilterTip } from "../../AutoFilter/AutoFilter.tip.tsx";
+import type { iFilterQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -34,6 +36,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [columnConfigs] = useState([] as (iAutoColumn | null | undefined)[]);
   columnConfigs.splice(0, columnConfigs.length);
 
+  /*筛选标签展示*/
+  const [showTips] = useState([] as (iFilterTip | iFilterTip[] | null | undefined)[]);
+  showTips.splice(0, showTips.length);
+
+  // 查询参数事件钩子
+  const onQueryParam = useEventHook<iFilterQueryParam>();
+
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();
 
@@ -50,13 +59,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const onAfterDelete = useEventHook<{ record: PlainObject, responseData: any }>();
 
   const hooks = useMemo(() => ({
-    bodyRender, searchRender, buttonConfigs, columnConfigs,
-    onClickRow, onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
+    onClickRow, onDoubleClickRow, onQueryParam,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
-    bodyRender, searchRender, buttonConfigs, columnConfigs,
-    onClickRow, onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
+    onClickRow, onDoubleClickRow, onQueryParam,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
@@ -138,6 +147,17 @@ export function useAutoTableState(autoTable: iAutoTable) {
           withCount: true,
         } satisfies BatisQueryBody,
       };
+
+      /*合并查询参数*/
+      const queryParam = await onQueryParam.exec(requestConfig.data);
+      /*格式化查询参数*/
+      const { queries, expression, ...leftQueryParam } = queryParam ?? {};
+      requestConfig.data = { ...requestConfig.data, ...leftQueryParam };
+      if (!!queries?.length) {
+        requestConfig.data.filters = queries;
+        if (!!expression) {requestConfig.data.filterExpression = expression;}
+      }
+
       await onBeforeLoad.exec({ requestConfig });
       const resp = await http.request<BatisQueryResponse>(requestConfig);
       setData(resp.data.list ?? []);
@@ -148,7 +168,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
     } finally {
       closeLoading();
     }
-  }, [runningConfig.module, http, loading, statePagination, onBeforeLoad, onAfterLoad]);
+  }, [
+    runningConfig.module, http,
+    loading, statePagination,
+    onBeforeLoad, onAfterLoad,
+    onQueryParam,
+  ]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -246,7 +271,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
       closeLoading();
     }
 
-  }, [http, loading, runningConfig.module, onBeforeInsert, onBeforeUpdate, onAfterInsert, onAfterUpdate]);
+  }, [
+    http, loading, runningConfig.module,
+    onBeforeInsert, onBeforeUpdate,
+    onAfterInsert, onAfterUpdate,
+    statePagination.pageSize,
+  ]);
 
   /*保存行内编辑的数据*/
   const saveRecord = useCallback(async (sourceRecord: PlainObject, validate = true) => {

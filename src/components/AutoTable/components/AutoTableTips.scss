@@ -1,0 +1,25 @@
+.auto-table-tips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .auto-tip-item {
+    font-size: 12px;
+    height: 20px;
+    line-height: 20px;
+    background-color: rgba(#1677ff, 0.1);
+    border: solid 1px rgba(#1677ff, 0.2);
+    padding: 0 5px;
+    border-radius: 2px;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+
+    svg {
+      transform: scale(0.9) translateY(1px) translateX(2px);
+      opacity: 0.75;
+    }
+  }
+}

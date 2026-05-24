@@ -11,6 +11,7 @@ export const menus: MenuItem[] = [
   { key: "/pages/resume/resume-user-list", icon: <HomeOutlined />, label: "用户简历" },
   { key: "/pages/demo/demo-backup", icon: <HomeOutlined />, label: "通用表格" },
   { key: "/pages/demo/demo-table-create", icon: <HomeOutlined />, label: "通用表格：新建" },
+  { key: "/pages/demo/demo-drawer-service", icon: <HomeOutlined />, label: "抽屉服务" },
 
   // { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
   //

@@ -1,13 +1,24 @@
-import React, { useCallback, useImperativeHandle, useState } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useRootRenderContext } from "./useRootRender";
 import { uuid } from "@peryl/utils/uuid";
 import { showError } from "../utils/showError";
 import { delay } from "@peryl/utils/delay";
 import { Button, Modal, type ModalProps, Space } from "antd";
-import { useMounted } from "./useMounted";
+import { useBeforeUnmount, useMounted } from "./useMounted";
 import { LoadingCover } from "../components/LoadingCover/LoadingCover";
+import { createEffects } from "@peryl/utils/createEffects";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface iModalServiceConfig {
+  content: React.ReactNode,
+  handleConfirm: () => boolean | void | Promise<boolean | void>,
+  handleCancel?: () => void | Promise<void>,
+  onInit?: () => void,
+  modalClassName?: string,
+  modalWidth?: number,
+  footerLeft?: React.ReactNode,
+  modalProps?: ModalProps,
+}
+
 type iContentProps = {}
 type iContentInstance = { triggerConfirm: () => void, close: () => void };
 
@@ -16,17 +27,10 @@ type iContentInstance = { triggerConfirm: () => void, close: () => void };
 */
 export function useModalService() {
   const { setRootRenderList } = useRootRenderContext();
+  const [{ effects: componentEffects }] = useState(() => createEffects());
+  useBeforeUnmount(() => {componentEffects.clear();});
 
-  const openModal = useCallback((config: {
-    content: React.ReactNode,
-    handleConfirm: () => boolean | void | Promise<boolean | void>,
-    handleCancel?: () => void | Promise<void>,
-    onInit?: () => void,
-    modalClassName?: string,
-    modalWidth?: number,
-    footerLeft?: React.ReactNode,
-    modalProps?: ModalProps,
-  }) => {
+  const openModal = useCallback((config: iModalServiceConfig) => {
 
     const renderKey = uuid();
 
@@ -37,7 +41,7 @@ export function useModalService() {
       const [saving, setSaving] = useState(false);
       const [isModalOpen, setModalOpen] = useState(false);
 
-      let isDone = false;
+      const isDoneRef = useRef(false)
 
       const onConfirm = async () => {
         try {
@@ -45,7 +49,7 @@ export function useModalService() {
           const flag = await config.handleConfirm();
           if (flag === false) {return;}
           setModalOpen(false);
-          isDone = true;
+          isDoneRef.current = true;
         } catch (e) {
           showError(e);
         } finally {
@@ -54,15 +58,14 @@ export function useModalService() {
       };
 
       const onCancel = () => {
-        isDone = true;
+        if (isDoneRef.current) {return;}
+        isDoneRef.current = true;
         config.handleCancel?.();
         setModalOpen(false);
       };
 
       const onClose = () => {
-        if (!isDone) {
-          onCancel();
-        }
+        onCancel();
         clearEffect();
       };
 
@@ -75,10 +78,19 @@ export function useModalService() {
 
       useImperativeHandle(ref, () => ({ triggerConfirm: onConfirm, close: () => setModalOpen(false) }));
 
+      useEffect(() => {
+        const close = () => setModalOpen(false);
+        componentEffects.push(close);
+        return () => {
+          const index = componentEffects.list.indexOf(close);
+          if (index >= 0) {componentEffects.list.splice(index, 1);}
+        };
+      }, []);
+
       return (
         <Modal
           wrapClassName={config.modalClassName}
-          width="fit-content"
+          width={config.modalWidth ?? "fit-content"}
           open={isModalOpen}
           onCancel={onCancel}
           afterOpenChange={open => {
@@ -115,7 +127,7 @@ export function useModalService() {
       triggerConfirm: () => contentRef?.triggerConfirm(),
     };
 
-  }, [setRootRenderList]);
+  }, [setRootRenderList, componentEffects]);
 
   return { openModal };
 }

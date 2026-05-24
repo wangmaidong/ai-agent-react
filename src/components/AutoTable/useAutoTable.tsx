@@ -7,13 +7,13 @@ export const useAutoTable = createAutoTableUser({
   pageSize: 5,
 });
 
-useAutoTable.addModule(100, "standardColumns", (autoTable) => {
-  autoTable.hooks.columnConfigs.push(...useMemo((): iAutoColumn[] => [
-    { type: "input", title: "ID", dataIndex: "id", editable: false },
-    { type: "input", title: "创建时间", dataIndex: "createdAt", editable: false },
-    { type: "input", title: "最后更新", dataIndex: "updatedAt", editable: false },
-  ], []));
-});
+// useAutoTable.addModule(100, "standardColumns", (autoTable) => {
+//   autoTable.hooks.columnConfigs.push(...useMemo((): iAutoColumn[] => [
+//     { type: "input", title: "ID", dataIndex: "id", editable: false },
+//     { type: "input", title: "创建时间", dataIndex: "createdAt", editable: false },
+//     { type: "input", title: "最后更新", dataIndex: "updatedAt", editable: false },
+//   ], []));
+// });
 
 export const useCrmTable = createAutoTableUser({
   pageSize: 5,

@@ -2,8 +2,6 @@ import { type FormInstance, type FormItemProps, type TableColumnType } from "ant
 import React from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { Rule } from "antd/es/form";
-import type { iAutoTableDefaultConfig, iAutoTableUseConfig } from "../AutoTable/useAutoTable.utils.tsx";
-import type { iAppService } from "../../AppService/useAppService.tsx";
 
 /*---------------------------------------types base-------------------------------------------*/
 
@@ -26,19 +24,19 @@ export interface iAutoColumnBase extends TableColumnType {
 }
 
 /*编辑渲染函数参数类型*/
-type iColEditParam = { record: PlainObject, index: number, formData: PlainObject, form: FormInstance, dataIndex: string, rules: Rule[] | undefined, }
+export type iColEditParam = { record: PlainObject, index: number, formData: PlainObject, form: FormInstance, dataIndex: string, rules: Rule[] | undefined, }
 /*行内非编辑时的渲染函数类型*/
-type iColInlineRender = (param: { value: any, record: PlainObject, index: number, dataIndex: string, }) => React.ReactNode
+export type iColInlineRender = (param: { value: any, record: PlainObject, index: number, dataIndex: string, }) => React.ReactNode
 /*行内编辑时的渲染函数类型*/
-type iColInlineEditor = (param: iColEditParam) => React.ReactNode
+export type iColInlineEditor = (param: iColEditParam) => React.ReactNode
 /*表单编辑时的渲染函数类型*/
-type iColFormEditor = (param: iColEditParam) => React.ReactNode
+export type iColFormEditor = (param: iColEditParam) => React.ReactNode
 /*编辑时的表单校验参数类型*/
-type iColRules = Rule[] | ((formData: PlainObject) => Rule[])
+export type iColRules = Rule[] | ((formData: PlainObject) => Rule[])
 /*行内编辑控制参数类型*/
-type iColEditable = boolean | ((record: PlainObject, index: number) => boolean)
+export type iColEditable = boolean | ((record: PlainObject, index: number) => boolean)
 /*用于计算编辑时传递给Form.Item的属性*/
-type iColGetFormItemProps = (param: iColEditParam & { drawer: boolean }) => FormItemProps
+export type iColGetFormItemProps = (param: iColEditParam & { drawer: boolean }) => FormItemProps
 
 /*用来扩展列特殊类型*/
 export interface iAutoColumnExpander {}

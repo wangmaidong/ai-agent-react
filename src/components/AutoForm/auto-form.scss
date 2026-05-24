@@ -1,0 +1,29 @@
+.auto-form {
+  --col-gutter: 24px;
+  .ant-form {
+    .ant-form-item {
+      margin-bottom: 0;
+    }
+  }
+  @each $col in 1, 2, 3 {
+    &[data-grid-col="#{$col}"] {
+      .ant-form {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .ant-form-item {
+        width: calc(((100% - (#{$col - 1}) * var(--col-gutter)) / #{$col}));
+        margin-bottom: var(--col-gutter);
+        margin-left: var(--col-gutter);
+
+        &:nth-child(#{$col}n+1) {
+          margin-left: 0;
+        }
+
+        &:nth-last-child(-n+#{$col}) {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}

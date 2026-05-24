@@ -3,10 +3,9 @@ import React, { useCallback, useMemo } from "react";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { AutoTableRow } from "./AutoTableRow.tsx";
 import { Table, type TablePaginationConfig } from "antd";
-import type { iAutoColumn, iAutoColumnBase } from "../../AutoColumn/AutoColumn.utils.tsx";
-import { AutoTableCell } from "./AutoTableCell.tsx";
+import type { iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
 import { insertSort } from "@peryl/utils/insertSort.ts";
-import { CreateDefaultColumnConfig } from "../../AutoColumn/CreateDefaultColumnConfig.tsx";
+import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../../AutoColumn/CreateDefaultColumnConfig.tsx";
 
 /*
 * 为了让 tablePropsColumns 尽可能最晚地执行（比所有模块函数晚执行），
@@ -43,23 +42,7 @@ export function AutoTableContent() {
       /*填充默认值*/
       const formattedColumns = notNullColumnConfigs.map((itemCol) => {
         if ("type" in itemCol && itemCol.type in CreateDefaultColumnConfig) {
-          /*有type，是我们自定义的列类型*/
-          const col = ({
-            sortable: true,
-            maxShowLen: 30,
-            ...CreateDefaultColumnConfig[itemCol.type](itemCol as any),
-          }) as iAutoColumn;
-          return {
-            render: (value, record, index) => (!col.dataIndex ? null :
-                <AutoTableCell
-                  col={col}
-                  value={value}
-                  record={record}
-                  index={index}
-                />
-            ),
-            ...col,
-          } satisfies iAutoColumnBase;
+          return fillWithDefaultColumn(itemCol);
         } else {
           /*没有type，当做Table普通的列处理*/
           return itemCol;

@@ -18,6 +18,7 @@ import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
 import { insertSort } from "@peryl/utils/insertSort.ts";
 import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../AutoColumn/CreateDefaultColumnConfig.tsx";
 import { useAutoTableFormService } from "./uses/useAutoTable.formService.tsx";
+import { useAutoTableVibeCreate } from "./uses/useAutoTable.vibeCreate.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -125,6 +126,7 @@ GlobalAutoTableModuleRegistration.addModule(8, "columns", useAutoTableColumn);
 GlobalAutoTableModuleRegistration.addModule(9, "singleSelect", useAutoTableSingleSelect);
 GlobalAutoTableModuleRegistration.addModule(10, "multipleSelect", useAutoTableMultiSelect);
 GlobalAutoTableModuleRegistration.addModule(11, "formService", useAutoTableFormService);
+GlobalAutoTableModuleRegistration.addModule(12, "vibeCreate", useAutoTableVibeCreate);
 
 /*
 * 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中

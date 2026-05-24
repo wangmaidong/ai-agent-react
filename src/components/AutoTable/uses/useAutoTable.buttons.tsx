@@ -35,19 +35,6 @@ export const useAutoTableButtons = (autoTable: iAutoTable) => {
   }), [showCreateButton, createRecord]);
   buttonConfigs.push(inlineCreateButtonConfig);
 
-  /*下拉按钮：智能新建*/
-  const vibeCreateButtonConfig = useMemo((): iAutoTableConfigButton | null => !showCreateButton ? null : ({
-    seq: 3,
-    key: "vibeCreateButton",
-    label: "智能新建",
-    icon: <SignatureOutlined />,
-    dropdownButton: true,
-    onClick: () => {
-      message.info("智能新建");
-    },
-  }), [showCreateButton]);
-  buttonConfigs.push(vibeCreateButtonConfig);
-
   /*将按钮渲染内容添加到 searchRender 中*/
   const searchRenderMeta = useMemo((): iRenderMeta | null => ({
     key: "buttons",

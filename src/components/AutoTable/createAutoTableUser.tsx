@@ -95,9 +95,26 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       methods: { editRecord },
     } = autoTable;
 
+    /*初始化的时候就立即加载数据*/
     useMounted(async () => {
-      autoTable.runningConfig.loadOnStart && await autoTable.methods.reload();
+      const { runningConfig, methods: { reload } } = autoTable;
+      if (!!runningConfig.parentTable && !!runningConfig.parentKeyMap) {
+        /*父子表联动的情况下，等父表选中行变化再查询数据*/
+        return;
+      } else {
+        /*loadOnStart为true时，立即加载数据*/
+        runningConfig.loadOnStart && await reload();
+      }
     });
+
+    /*有父表的情况下，监听父表的选中行变化事件，自动重新加载子表数据*/
+    if (!!autoTable.runningConfig.parentTable) {
+      const { methods: { reload } } = autoTable;
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      autoTable.runningConfig.parentTable.hooks.onSelectRowChange.use(useCallback(() => {
+        reload();
+      }, [reload]));
+    }
 
     autoTable.hooks.onDoubleClickRow.use(
       useCallback(async ({ record }) => {

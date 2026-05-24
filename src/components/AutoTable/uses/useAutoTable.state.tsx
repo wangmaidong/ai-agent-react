@@ -17,7 +17,8 @@ import { toArray } from "@peryl/utils/toArray";
 import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
 import { useEventHook } from "../../../uses/useEventHook.tsx";
 import type { iFilterTip } from "../../AutoFilter/AutoFilter.tip.tsx";
-import type { iFilterQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
+import { type iFilterHandlerQueryMeta, type iFilterQueryParam, mergeQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
+import { getNewestValue } from "../../../uses/getNewestValue.ts";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -49,6 +50,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const onClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
   const onDoubleClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
   const onClickTitle = useEventHook<{ column: iAutoColumn, e: React.MouseEvent }>();
+  const onSelectRowChange = useEventHook<{ record: PlainObject | null }>(); // 选中行发生变化的事件钩子
 
   const onBeforeLoad = useEventHook<{ requestConfig: AxiosRequestConfig }>();
   const onAfterLoad = useEventHook<{ data: PlainObject[], resp: any }>();
@@ -61,12 +63,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   const hooks = useMemo(() => ({
     bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
-    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle, onSelectRowChange,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
     bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
-    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle, onSelectRowChange,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
@@ -140,6 +142,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*---------------------------------------methods-------------------------------------------*/
 
+  const { parentTable, parentKeyMap } = runningConfig as any;
   /*page是从0开始的*/
   const load = useCallback(async (page?: number, pageSize?: number) => {
     page = page ?? statePagination.pageCurrent - 1;
@@ -158,8 +161,35 @@ export function useAutoTableState(autoTable: iAutoTable) {
       };
 
       /*合并查询参数*/
-      const queryParam = await onQueryParam.exec(requestConfig.data);
+      let queryParam = await onQueryParam.exec(requestConfig.data);
+
+      /*处理父子表关联查询参数*/
+      /*父子表查询参数*/
+      if (!!parentTable && parentKeyMap) {
+        const parentSelectRowId = await getNewestValue((parentTable as iAutoTable).singleSelect.setSingleSelectId);
+        const parentDataList = await getNewestValue((parentTable as iAutoTable).state.setData);
+        const parentSelectRow: PlainObject | undefined = parentDataList.find(i => i.id === parentSelectRowId);
+        if (!!parentSelectRow) {
+          /*父表的筛选条件*/
+          const queries = Object.entries(parentKeyMap as Record<string, string>).reduce((prev, [childKey, parentKey]) => {
+            prev.push({ field: childKey, operator: "=", value: parentSelectRow[parentKey] });
+            return prev;
+          }, [] as iFilterHandlerQueryMeta[]);
+          queryParam = mergeQueryParam(queryParam, { queries });
+        } else {
+          /*父表没有选中行，子表load直接清空数据*/
+          setData([]);
+          return;
+        }
+      }
+
       /*格式化查询参数*/
+      if (!!runningConfig.queryParam) {
+        queryParam = mergeQueryParam(
+          queryParam,
+          typeof runningConfig.queryParam === "function" ? await runningConfig.queryParam() : runningConfig.queryParam,
+        );
+      }
       const { queries, expression, ...leftQueryParam } = queryParam ?? {};
       requestConfig.data = { ...requestConfig.data, ...leftQueryParam };
       if (!!queries?.length) {
@@ -172,6 +202,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       setData(resp.data.list ?? []);
       setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
       await onAfterLoad.exec({ data: resp.data.list ?? [], resp });
+      return resp;
     } catch (e) {
       showError(e);
     } finally {
@@ -181,7 +212,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     runningConfig.module, http,
     loading, statePagination,
     onBeforeLoad, onAfterLoad,
-    onQueryParam,
+    onQueryParam, parentTable, parentKeyMap,
   ]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
@@ -349,8 +380,30 @@ export function useAutoTableState(autoTable: iAutoTable) {
         initialNewRecord.id = `new_${uuid()}`;
       }
     }
+
+    /*父子表映射字段默认值*/
+    if (!!parentKeyMap && !!parentTable) {
+      const parentSelectRowId = await getNewestValue((parentTable as iAutoTable).singleSelect.setSingleSelectId);
+      const parentDataList = await getNewestValue((parentTable as iAutoTable).state.setData);
+      const parentSelectRow: PlainObject | undefined = parentDataList.find(i => i.id === parentSelectRowId);
+      if (!parentSelectRow) {
+        const err = "父表缺少选中行数据！";
+        showError(err);
+        throw new Error(err);
+      }
+      const defaultNewRecord = Object.entries(parentKeyMap as Record<string, string>)
+        .reduce((prev, [childKey, parentKey]) => {
+          prev[childKey] = parentSelectRow![parentKey];
+          return prev;
+        }, initialNewRecord);
+      Object.assign(initialNewRecord, defaultNewRecord);
+    }
+
     return initialNewRecord;
-  }, [defaultNewRow, defaultNewRowId, nextId]);
+  }, [
+    defaultNewRow, defaultNewRowId, nextId,
+    parentTable, parentKeyMap,
+  ]);
 
   /*新建一条数据*/
   const createRecord = useCallback(async (initialValues?: PlainObject | PlainObject[]) => {

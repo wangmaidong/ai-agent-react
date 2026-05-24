@@ -44,8 +44,8 @@ export interface iAutoTableInputConfig {
   sortField?: string,                                         /*默认排序字段*/
   sortDesc?: boolean,                                         /*默认排序方式*/
   searchField?: string,                                       /*默认搜索字段*/
-  // parentTable?: iAutoTable,                                /*父表autoTable*/
-  // parentKeyMap?: Record<string, string>,                   /*父表字段映射*/
+  parentTable?: iAutoTable,                                   /*父表autoTable*/
+  parentKeyMap?: Record<string, string>,                      /*父表字段映射*/
   queryParam?: PlainObject | (() => Promise<PlainObject>),    /*查询参数*/
   createButtonText?: string,                                  /*新建按钮文本内容*/
   handleCreate?: () => void | Promise<void>,                  /*自定义处理新建按钮点击处理逻辑*/

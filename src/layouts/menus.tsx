@@ -18,6 +18,7 @@ export const menus: MenuItem[] = [
   { key: "/pages/demo/demo-auto-table-cascade-cols", icon: <HomeOutlined />, label: "表格封装: 联动字段" },
   { key: "/pages/demo/demo-filter-component", icon: <HomeOutlined />, label: "查询表单" },
   { key: "/pages/demo/demo-auto-table-col-types", icon: <HomeOutlined />, label: "表格Vibe查询" },
+  { key: "/pages/demo/demo-auto-table-parents", icon: <HomeOutlined />, label: "表格封装: 父子联动" },
   // { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
   //
   // { key: '/pages/org/org', icon: <ClusterOutlined/>, label: '组织管理', },

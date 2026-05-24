@@ -20,6 +20,7 @@ import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../AutoColumn/
 import { useAutoTableFormService } from "./uses/useAutoTable.formService.tsx";
 import { useAutoTableVibeCreate } from "./uses/useAutoTable.vibeCreate.tsx";
 import { useAutoTableSort } from "./uses/useAutoTable.sort.tsx";
+import { useAutoTableVibeButton } from "./uses/useAutoTable.vibeButton.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -129,6 +130,7 @@ GlobalAutoTableModuleRegistration.addModule(10, "multipleSelect", useAutoTableMu
 GlobalAutoTableModuleRegistration.addModule(11, "formService", useAutoTableFormService);
 GlobalAutoTableModuleRegistration.addModule(12, "vibeCreate", useAutoTableVibeCreate);
 GlobalAutoTableModuleRegistration.addModule(13, "sort", useAutoTableSort);
+GlobalAutoTableModuleRegistration.addModule(14, "vibeButton", useAutoTableVibeButton);
 
 /*
 * 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中

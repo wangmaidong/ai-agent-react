@@ -38,17 +38,18 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       appService,
     } as any;
 
+    /*安装所有的通用表格模块*/
     localAutoTableModuleRegistration.useModule({
       autoTable,
       prevMapper: GlobalAutoTableModuleRegistration.moduleMapper,
     });
 
     /*在所有模块安装完毕之后，立即计算最后这个列信息*/
-    const { columnConfigs } = autoTable.hooks;
+    const { hooks: { columnConfigs }, state: { tempColumns } } = autoTable;
     autoTable.state.renderColumnsRef.current = useMemo(() => {
         const notNullColumnConfigs: iAutoColumn[] = columnConfigs.filter(i => i != null);
         /*填充默认值*/
-        const formattedColumns = notNullColumnConfigs.map((itemCol) => {
+        let formattedColumns = notNullColumnConfigs.map((itemCol) => {
           if ("type" in itemCol && itemCol.type in CreateDefaultColumnConfig) {
             return fillWithDefaultColumn(itemCol);
           } else {
@@ -56,6 +57,20 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
             return itemCol;
           }
         });
+
+        if (!!tempColumns?.length) {
+          formattedColumns = formattedColumns.map(item => {
+            const tempItem = tempColumns.find(i => i.field === item.dataIndex);
+            if (!tempItem) {return item;}
+            return {
+              ...item,
+              width: tempItem.width,
+              fixed: tempItem.fixed as any,
+              seq: tempItem.seq,
+            };
+          });
+        }
+
         /*按照seq排序*/
         return insertSort(formattedColumns,
           (a, b) => {
@@ -70,7 +85,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
           });
       },
       // eslint-disable-next-line
-      [columnConfigs, ...columnConfigs],
+      [tempColumns, columnConfigs, ...columnConfigs],
     );
 
     /*---------------------------------------lifecycle-------------------------------------------*/

@@ -5,7 +5,7 @@ import { deepcopy } from "@peryl/utils/deepcopy.ts";
 import type { AxiosRequestConfig } from "axios";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
-import type { iAutoOptionSortData, iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
+import type { iAutoOptionSortData, iAutoTable, iAutoTableConfigButton, iAutoTempColumnConfig } from "../useAutoTable.utils.tsx";
 import { getRowsMapper, type iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisDeleteResponse, BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
@@ -106,6 +106,8 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   const [sortData, setSortData] = useState((): iAutoOptionSortData[] => [{ field: runningConfig.sortField ?? "createdAt", desc: runningConfig.sortDesc ?? true }]);
 
+  const [tempColumns, setTempColumns] = useState(null as null | iAutoTempColumnConfig[]);
+
   useEffect(() => {
     // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
@@ -122,6 +124,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     overrideButtonContent,
     renderColumnsRef,
     sortData, setSortData,
+    tempColumns, setTempColumns,
   }), [
     data, setData,
     statePagination, setStatePagination,
@@ -132,6 +135,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     overrideButtonContent,
     renderColumnsRef,
     sortData, setSortData,
+    tempColumns, setTempColumns,
   ]);
 
   /*---------------------------------------methods-------------------------------------------*/

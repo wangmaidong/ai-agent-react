@@ -47,6 +47,7 @@ export function AutoTableContent() {
         columns={tablePropsColumns}
         components={tablePropsComponents}
         onRow={tablePropsOnRow}
+        scroll={{ x: "max-content", y: "max-content" }}
         rowKey="id"
         {...runningConfig.tableProps}
       />

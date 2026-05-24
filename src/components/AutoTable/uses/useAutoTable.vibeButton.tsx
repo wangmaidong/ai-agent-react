@@ -11,7 +11,7 @@ import { Button, Tooltip } from "antd";
 export function useAutoTableVibeButton(autoTable: iAutoTable) {
 
   const {
-    state: { renderColumnsRef, setSortData },
+    state: { renderColumnsRef, setSortData, setTempColumns },
     methods: { reload },
     hooks: { searchRender, onQueryParam, showTips },
   } = autoTable;
@@ -55,11 +55,15 @@ export function useAutoTableVibeButton(autoTable: iAutoTable) {
         }
 
         /*---------------------------------------处理Vibe字段配置-------------------------------------------*/
+        const configJsonString = extractContentFromTags(message, "/*---ConfigStart---*/", "/*---ConfigEnd---*/");
+        if (!!configJsonString) {
+          setTempColumns(JSON.parse(configJsonString).columns);
+        }
 
         if (
           !!searchJsonString
           || !!sortJsonString
-          // || !!configJsonString
+          || !!configJsonString
         ) {
           await delay(23);
           reload();
@@ -71,6 +75,8 @@ export function useAutoTableVibeButton(autoTable: iAutoTable) {
     reload,
     renderColumnsRef,
     openCopilotService,
+    setTempColumns,
+    setSortData,
   ]);
 
   searchRender.use(

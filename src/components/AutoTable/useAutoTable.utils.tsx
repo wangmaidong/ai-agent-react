@@ -86,6 +86,17 @@ export interface iAutoOptionSortData {
   desc: boolean
 }
 
+/*用来Vibe配置表格字段信息的对象类型*/
+export interface iAutoTempColumnConfig {
+  title: string,
+  field: string,
+  type: string,
+  width: number,
+  minWidth: number,
+  fixed: "left" | "center" | "right",
+  seq: number,
+}
+
 /*---------------------------------------context-------------------------------------------*/
 
 // 是AutoTable向所有子孙组件透传的上下文

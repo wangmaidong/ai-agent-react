@@ -67,7 +67,7 @@ export function useAutoTableVibeButton(autoTable: iAutoTable) {
         ) {
           await delay(23);
           reload();
-          closeModal();
+          // closeModal();
         }
       },
     });

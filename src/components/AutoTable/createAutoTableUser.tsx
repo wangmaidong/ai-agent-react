@@ -70,6 +70,7 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       // eslint-disable-next-line
       [columnConfigs, ...columnConfigs],
     );
+    console.log(autoTable.state.renderColumnsRef.current);
 
     /*---------------------------------------lifecycle-------------------------------------------*/
     const {

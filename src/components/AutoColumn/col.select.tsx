@@ -16,8 +16,6 @@ export function installColumnSelect() {
     const options: { label: string, value: any }[] = col.options.map(item => typeof item === "string" ? { label: item, value: item } : item);
     const value2label = getRowsMapper(options, { key: "value", value: "label" });
     return {
-      ...col,
-      type: "select",
       width: "120px",
       filterOption: {
         filterType: "select" as const,
@@ -59,6 +57,7 @@ export function installColumnSelect() {
           );
         }
       },
+      ...col,
     };
   };
 }

@@ -21,26 +21,7 @@ export default function Page() {
         ),
       },
     ],
-    showCheckColumn: true,
   }));
-  // console.log("autoTable", autoTable);
-  // console.log(autoTable.state.data.map(i => i.fullName));
-
-  /*一个测试的按钮，用来展示选中的数据*/
-  autoTable.hooks.buttonConfigs.push(useMemo((): iAutoTableConfigButton | null => !autoTable.runningConfig.showCheckColumn ? null : ({
-    key: "showMultiSelectRows",
-    label: "获取多选行",
-    onClick: () => {
-      const val = autoTable.multiSelect.checkedRows.map(i => i.fullName).join(", ") || "无选中数据";
-      console.log({ val }, autoTable.multiSelect.checkedRows);
-      notification.info({ description: val });
-    },
-  }), [autoTable.runningConfig.showCheckColumn, autoTable.multiSelect.checkedRows]));
-
-  autoTable.hooks.onDoubleClickRow.use(({ record }) => {
-    const index = autoTable.state.data.findIndex(i => i.id === record.id);
-    console.log(index, record);
-  });
 
   return (
     <PageContainer>

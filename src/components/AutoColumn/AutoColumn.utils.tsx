@@ -2,6 +2,7 @@ import { type FormInstance, type FormItemProps, type TableColumnType } from "ant
 import React from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { Rule } from "antd/es/form";
+import type { iFilterOption } from "../AutoFilter/AutoFilter.utils.tsx";
 
 /*---------------------------------------types base-------------------------------------------*/
 
@@ -20,8 +21,8 @@ export interface iAutoColumnBase extends TableColumnType {
   originTitle?: string,                                       /*字段标题*/
   maxShowLen?: number,                                        /*最大显示文本长度*/
   getDescriptionPrompt?: (col: iAutoColumnBase) => string,    /*获取列的提示词*/
-  // filterOption?: iFilterOption,                            /*筛选配置信息*/
-  // getFilterText?: (value: any) => string | Promise<string> /*将值转化为筛选条件显示值*/
+  filterOption?: iFilterOption,                               /*筛选配置信息*/
+  getFilterText?: (value: any) => string | Promise<string>    /*将值转化为筛选条件显示值*/
 }
 
 /*编辑渲染函数参数类型*/

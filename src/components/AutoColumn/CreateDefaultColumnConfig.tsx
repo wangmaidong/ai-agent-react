@@ -9,7 +9,7 @@ import { AutoTableCell } from "../AutoTable/components/AutoTableCell.tsx";
 import { installColumnDate } from "./col.date.tsx";
 import { installColumnDatetime } from "./col.datetime.tsx";
 import { installColumnImage } from "./col.image.tsx";
-import { installColumnNumber } from "./ol.number.tsx";
+import { installColumnNumber } from "./col.number.tsx";
 import { installColumnText } from "./col.text.tsx";
 import { installColumnTextarea } from "./col.textarea.tsx";
 

@@ -88,11 +88,15 @@ export const ResumeChatCopilot = React.forwardRef<iResumeChatCopilotInstance, iR
   const handleRequestUpdate = useStableCallback(async (
     chunk: any,
   ) => {
+    void message;
     if (chunk.data === "[DONE]") {return;}
     try {
       const chunkObj = JSON.parse(chunk.data);
-      props.handleAiUpdate?.(chunkObj.choices[0].delta.content);
-    } catch {
+      if (!!chunkObj.choices[0]) {
+        props.handleAiUpdate?.(chunkObj.choices[0].delta.content);
+      }
+    } catch (e) {
+      console.error(e);
       notification.error({ description: `解析ChunkMessage失败：` + chunk.data });
     }
   });

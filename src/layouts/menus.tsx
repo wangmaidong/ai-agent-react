@@ -14,6 +14,7 @@ export const menus: MenuItem[] = [
   { key: "/pages/demo/demo-drawer-service", icon: <HomeOutlined />, label: "抽屉服务" },
   { key: "/pages/demo/demo-auto-form", icon: <HomeOutlined />, label: "表单封装" },
   { key: "/pages/demo/demo-form-service", icon: <HomeOutlined />, label: "表单服务" },
+  { key: "/pages/demo/demo-copilot-service", icon: <HomeOutlined />, label: "助手服务" },
 
   // { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
   //

@@ -47,6 +47,7 @@ export function AutoTableContent() {
         columns={tablePropsColumns}
         components={tablePropsComponents}
         onRow={tablePropsOnRow}
+        rowKey="id"
         {...runningConfig.tableProps}
       />
     </div>

@@ -13,17 +13,9 @@ export function useAutoTableSort(autoTable: iAutoTable) {
     useCallback(({ column }) => {
       if (!column.sortable) {return;}
 
-      if (sortData.length === 1) {
-        /*处理切换排序额度字段情况，我们默认点击标题的时候，只使用一个字段排序*/
-
-        if (sortData[0].field === column.dataIndex) {
-          setSortData([{ ...sortData[0], desc: !sortData[0].desc }]);
-        } else {
-          setSortData([{ field: String(column.dataIndex), desc: true }]);
-        }
+      if (sortData.length === 1 && sortData[0].field === column.dataIndex) {
+        setSortData([{ ...sortData[0], desc: !sortData[0].desc }]);
       } else {
-        /*没有排序字段或者排序字段超过1个*/
-
         setSortData([{ field: String(column.dataIndex), desc: true }]);
       }
       reload()

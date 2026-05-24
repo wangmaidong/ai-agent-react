@@ -12,7 +12,7 @@ export function useAutoTableColumn(autoTable: iAutoTable) {
 
   /*---------------------------------------增加一个自动撑开宽度的列-------------------------------------------*/
   columnConfigs.push(useMemo(() =>
-    ({ seq: 99, type: "input", dataIndex: "__fit__", width: undefined, title: "", editable: false }), []));
+    ({ seq: 99, type: "input", dataIndex: "__fit__", width: undefined, title: "", editable: false, standard: true }), []));
 
   /*---------------------------------------增加索引列-------------------------------------------*/
   const indexColumnConfig = useMemo((): iAutoColumnIndex | null =>

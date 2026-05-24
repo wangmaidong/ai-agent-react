@@ -16,6 +16,7 @@ export function installColumnOperation() {
       fixed: "right",
       title: "操作列",
       dataIndex: "__operation__",
+      standard: true,
       inlineRender: ({ record }) => <OperationInlineRender record={record} />,
       inlineEditor: ({ record }) => <OperationInlineEditor record={record} />,
       ...col,

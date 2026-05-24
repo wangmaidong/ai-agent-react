@@ -19,6 +19,7 @@ export interface iAutoColumnBase extends TableColumnType {
   sortable?: boolean,                                         /*字段是否可以排序*/
   originTitle?: string,                                       /*字段标题*/
   maxShowLen?: number,                                        /*最大显示文本长度*/
+  getDescriptionPrompt?: (col: iAutoColumnBase) => string,    /*获取列的提示词*/
   // filterOption?: iFilterOption,                            /*筛选配置信息*/
   // getFilterText?: (value: any) => string | Promise<string> /*将值转化为筛选条件显示值*/
 }

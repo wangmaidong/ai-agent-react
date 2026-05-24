@@ -6,6 +6,12 @@ import { installColumnOperation } from "../AutoTable/standard/operation/col.oper
 import { installColumnIndex } from "../AutoTable/standard/index/col.index.tsx";
 import { installColumnCheck } from "../AutoTable/standard/check/col.check.tsx";
 import { AutoTableCell } from "../AutoTable/components/AutoTableCell.tsx";
+import { installColumnDate } from "./col.date.tsx";
+import { installColumnDatetime } from "./col.datetime.tsx";
+import { installColumnImage } from "./col.image.tsx";
+import { installColumnNumber } from "./ol.number.tsx";
+import { installColumnText } from "./col.text.tsx";
+import { installColumnTextarea } from "./col.textarea.tsx";
 
 export const CreateDefaultColumnConfig: iCreateDefaultColumnConfig = {} as any;
 
@@ -29,6 +35,13 @@ export function fillWithDefaultColumn(itemCol: iAutoColumn) {
 installColumnInput();
 installColumnSelect();
 installColumnToggle();
+installColumnDate();
+installColumnDatetime();
+installColumnImage();
+installColumnNumber();
+installColumnText();
+installColumnTextarea();
+
 installColumnOperation();
 installColumnIndex();
 installColumnCheck();

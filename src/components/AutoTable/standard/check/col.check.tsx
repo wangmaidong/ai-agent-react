@@ -18,6 +18,7 @@ export function installColumnCheck() {
       align: "center",
       title: <CheckTitleRender />,
       dataIndex: "__check__",
+      standard: true,
       inlineRender: ({ record }) => <CheckInlineRender record={record} />,
       inlineEditor: ({ record }) => <CheckInlineRender record={record} />,
       ...col,

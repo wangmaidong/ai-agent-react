@@ -16,6 +16,7 @@ export function installColumnInput() {
     return {
       ...col,
       width: "120px",
+      getDescriptionPrompt: () => `字段名：${col.title}，字段标识：${String(col.dataIndex)}，说明：数据类型为文本`,
       inlineRender: ({ value }) => value,
       inlineEditor: () => <Input />,
     };

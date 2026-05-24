@@ -80,6 +80,12 @@ export type iAutoTableConfigButton = {
   primary?: boolean,                  // 按钮是否为主要按钮
 }
 
+/*排序参数类型*/
+export interface iAutoOptionSortData {
+  field: string,
+  desc: boolean
+}
+
 /*---------------------------------------context-------------------------------------------*/
 
 // 是AutoTable向所有子孙组件透传的上下文

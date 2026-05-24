@@ -14,6 +14,7 @@ export function AutoFilterForm(props: {
 
   const filterOptionList = useMemo(() => {
     return renderColumnsRef.current.filter(i => !!i && !!i.filterOption && !i.standard).map(i => i!.filterOption!);
+    // eslint-disable-next-line
   }, [renderColumnsRef.current, ...renderColumnsRef.current]);
 
   return (

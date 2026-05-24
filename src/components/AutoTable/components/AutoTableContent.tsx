@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from "react";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { AutoTableRow } from "./AutoTableRow.tsx";
 import { Table, type TablePaginationConfig } from "antd";
+import { AutoTableTitle } from "./AutoTableTitle.tsx";
 
 /*
 * 为了让 tablePropsColumns 尽可能最晚地执行（比所有模块函数晚执行），
@@ -32,7 +33,10 @@ export function AutoTableContent() {
     onChange: async (page, pageSize) => load(page - 1, pageSize),
   }), [statePagination, data, runningConfig.paginationPageSizeOptions, load, isTableEditing]);
 
-  const tablePropsColumns = useMemo(() => renderColumnsRef.current, [...renderColumnsRef.current]);
+  const tablePropsColumns = useMemo(() => renderColumnsRef.current.map(item => ({
+    ...item,
+    title: (props: any) => <AutoTableTitle col={item} {...props} />,
+  })), [...renderColumnsRef.current]);
 
   return useMemo(() => (
     <div className="auto-table-body">

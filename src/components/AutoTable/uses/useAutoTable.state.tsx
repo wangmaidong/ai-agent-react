@@ -5,7 +5,7 @@ import { deepcopy } from "@peryl/utils/deepcopy.ts";
 import type { AxiosRequestConfig } from "axios";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
-import type { iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
+import type { iAutoOptionSortData, iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
 import { getRowsMapper, type iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisDeleteResponse, BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
@@ -48,6 +48,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   const onClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
   const onDoubleClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
+  const onClickTitle = useEventHook<{ column: iAutoColumn, e: React.MouseEvent }>();
 
   const onBeforeLoad = useEventHook<{ requestConfig: AxiosRequestConfig }>();
   const onAfterLoad = useEventHook<{ data: PlainObject[], resp: any }>();
@@ -60,12 +61,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   const hooks = useMemo(() => ({
     bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
-    onClickRow, onDoubleClickRow, onQueryParam,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
     bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
-    onClickRow, onDoubleClickRow, onQueryParam,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle,
     onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
     onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
@@ -103,6 +104,8 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   const renderColumnsRef = useRef([] as iAutoColumn[]);
 
+  const [sortData, setSortData] = useState((): iAutoOptionSortData[] => [{ field: runningConfig.sortField ?? "createdAt", desc: runningConfig.sortDesc ?? true }]);
+
   useEffect(() => {
     // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
@@ -118,6 +121,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     loading, isLoading,
     overrideButtonContent,
     renderColumnsRef,
+    sortData, setSortData,
   }), [
     data, setData,
     statePagination, setStatePagination,
@@ -127,6 +131,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     loading, isLoading,
     overrideButtonContent,
     renderColumnsRef,
+    sortData, setSortData,
   ]);
 
   /*---------------------------------------methods-------------------------------------------*/

@@ -27,3 +27,26 @@
     }
   }
 }
+
+.gradient-text {
+  background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #5f27cd);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gradientFlow 4s ease infinite;
+  font-weight: bold;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

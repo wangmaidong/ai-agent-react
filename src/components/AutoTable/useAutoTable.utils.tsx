@@ -29,6 +29,7 @@ export interface iAutoTableDefaultConfig {
   showButtonBar?: boolean,            /*显示按钮栏*/
   paginationPageSizeOptions?: number[],/*页码大小选项*/
   tableProps?: TableProps<PlainObject>,/*传递给Table组件的属性*/
+  autoFormGridCols?: number,          /*表单编辑默认的列数*/
 }
 
 // 调用useAutoTable时才能确定传入的参数类型

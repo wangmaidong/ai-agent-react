@@ -10,10 +10,14 @@ import { useAutoTableFilterText } from "./uses/useAutoTable.filterText.tsx";
 import { Space } from "antd";
 import "./auto-table.scss";
 import { useAutoTableButtons } from "./uses/useAutoTable.buttons.tsx";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAutoTableColumn } from "./uses/useAutoTable.columns.tsx";
 import { useAutoTableSingleSelect } from "./uses/useAutoTable.singleSelect.tsx.tsx";
 import { useAutoTableMultiSelect } from "./uses/useAutoTable.multiSelect.tsx";
+import type { iAutoColumn } from "../AutoColumn/AutoColumn.utils.tsx";
+import { insertSort } from "@peryl/utils/insertSort.ts";
+import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../AutoColumn/CreateDefaultColumnConfig.tsx";
+import { useAutoTableFormService } from "./uses/useAutoTable.formService.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -35,6 +39,36 @@ export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
       autoTable,
       prevMapper: GlobalAutoTableModuleRegistration.moduleMapper,
     });
+
+    /*在所有模块安装完毕之后，立即计算最后这个列信息*/
+    const { columnConfigs } = autoTable.hooks;
+    autoTable.state.renderColumnsRef.current = useMemo(() => {
+        const notNullColumnConfigs: iAutoColumn[] = columnConfigs.filter(i => i != null);
+        /*填充默认值*/
+        const formattedColumns = notNullColumnConfigs.map((itemCol) => {
+          if ("type" in itemCol && itemCol.type in CreateDefaultColumnConfig) {
+            return fillWithDefaultColumn(itemCol);
+          } else {
+            /*没有type，当做Table普通的列处理*/
+            return itemCol;
+          }
+        });
+        /*按照seq排序*/
+        return insertSort(formattedColumns,
+          (a, b) => {
+            // 默认seq=0
+            let aSeq = a.seq ?? 0;
+            if (a.fixed === "left") {aSeq -= 100;}
+            if (a.fixed === "right") {aSeq += 100;}
+            let bSeq = b.seq ?? 0;
+            if (b.fixed === "left") {bSeq -= 100;}
+            if (b.fixed === "right") {bSeq += 100;}
+            return aSeq > bSeq;
+          });
+      },
+      // eslint-disable-next-line
+      [columnConfigs, ...columnConfigs],
+    );
 
     /*---------------------------------------lifecycle-------------------------------------------*/
     const {
@@ -90,6 +124,7 @@ GlobalAutoTableModuleRegistration.addModule(7, "buttons", useAutoTableButtons);
 GlobalAutoTableModuleRegistration.addModule(8, "columns", useAutoTableColumn);
 GlobalAutoTableModuleRegistration.addModule(9, "singleSelect", useAutoTableSingleSelect);
 GlobalAutoTableModuleRegistration.addModule(10, "multipleSelect", useAutoTableMultiSelect);
+GlobalAutoTableModuleRegistration.addModule(11, "formService", useAutoTableFormService);
 
 /*
 * 1. 在state模块中，将 runningConfig.columns 加到了 columnConfigs 中

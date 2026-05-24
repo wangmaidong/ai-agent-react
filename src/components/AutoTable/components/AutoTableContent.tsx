@@ -3,9 +3,6 @@ import React, { useCallback, useMemo } from "react";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { AutoTableRow } from "./AutoTableRow.tsx";
 import { Table, type TablePaginationConfig } from "antd";
-import type { iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
-import { insertSort } from "@peryl/utils/insertSort.ts";
-import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../../AutoColumn/CreateDefaultColumnConfig.tsx";
 
 /*
 * 为了让 tablePropsColumns 尽可能最晚地执行（比所有模块函数晚执行），
@@ -13,7 +10,7 @@ import { CreateDefaultColumnConfig, fillWithDefaultColumn } from "../../AutoColu
 */
 export function AutoTableContent() {
   const {
-    state: { statePagination, data, isLoading, isTableEditing },
+    state: { statePagination, data, isLoading, isTableEditing, renderColumnsRef },
     methods: { load }, runningConfig,
     hooks: { columnConfigs },
   } = useAutoTableContext();
@@ -35,35 +32,7 @@ export function AutoTableContent() {
     onChange: async (page, pageSize) => load(page - 1, pageSize),
   }), [statePagination, data, runningConfig.paginationPageSizeOptions, load, isTableEditing]);
 
-  const tablePropsColumns = useMemo(() => {
-
-      const notNullColumnConfigs: iAutoColumn[] = columnConfigs.filter(i => i != null);
-
-      /*填充默认值*/
-      const formattedColumns = notNullColumnConfigs.map((itemCol) => {
-        if ("type" in itemCol && itemCol.type in CreateDefaultColumnConfig) {
-          return fillWithDefaultColumn(itemCol);
-        } else {
-          /*没有type，当做Table普通的列处理*/
-          return itemCol;
-        }
-      });
-
-      /*按照seq排序*/
-      return insertSort(formattedColumns,
-        (a, b) => {
-          // 默认seq=0
-          let aSeq = a.seq ?? 0;
-          if (a.fixed === "left") {aSeq -= 100;}
-          if (a.fixed === "right") {aSeq += 100;}
-          let bSeq = b.seq ?? 0;
-          if (b.fixed === "left") {bSeq -= 100;}
-          if (b.fixed === "right") {bSeq += 100;}
-          return aSeq > bSeq;
-        });
-    },
-    // eslint-disable-next-line
-    [columnConfigs, ...columnConfigs]);
+  const tablePropsColumns = useMemo(() => renderColumnsRef.current, [...renderColumnsRef.current]);
 
   return useMemo(() => (
     <div className="auto-table-body">

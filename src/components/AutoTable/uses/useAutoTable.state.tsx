@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FormInstance, message } from "antd";
 import { omit } from "@peryl/utils/omit.ts";
 import { deepcopy } from "@peryl/utils/deepcopy.ts";
@@ -92,6 +92,8 @@ export function useAutoTableState(autoTable: iAutoTable) {
   /*用来控制按钮的渲染，当这个【overrideButtonContent】有值的时候，渲染这个值*/
   const [overrideButtonContent, setOverrideButtonContent] = useState(null as null | React.ReactNode);
 
+  const renderColumnsRef = useRef([] as iAutoColumn[]);
+
   useEffect(() => {
     // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
@@ -106,6 +108,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     formInstanceManager,
     loading, isLoading,
     overrideButtonContent,
+    renderColumnsRef,
   }), [
     data, setData,
     statePagination, setStatePagination,
@@ -114,6 +117,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     formInstanceManager,
     loading, isLoading,
     overrideButtonContent,
+    renderColumnsRef,
   ]);
 
   /*---------------------------------------methods-------------------------------------------*/
@@ -189,10 +193,11 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*保存行数据*/
   const requestUpsert = useCallback(async (
-    { isCreatedRecord, sourceRecord, editRecord }: {
+    { isCreatedRecord, sourceRecord, editRecord, isFormCreate }: {
       sourceRecord: PlainObject, // 原始行数据
       editRecord: PlainObject,   // 编辑后的行数据
       isCreatedRecord: boolean, // 是否为行内编辑新建的数据
+      isFormCreate: boolean,    // 是否为表单新建的数据
     },
   ) => {
     const closeLoading = loading();
@@ -221,13 +226,17 @@ export function useAutoTableState(autoTable: iAutoTable) {
       if (!resp.data.result) {
         throw new Error("保存返回数据为空");
       }
-      // 更新表格数据
-      setData(prevData => prevData.map(item => item.id === sourceRecord.id ? resp.data.result! : item));
-
-      if (isCreatedRecord) {
-        setStateCreateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+      if (isFormCreate) {
+        setData(prevData => [resp.data.result as PlainObject, ...prevData].slice(0, statePagination.pageSize));
       } else {
-        setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        // 更新表格数据
+        setData(prevData => prevData.map(item => item.id === sourceRecord.id ? resp.data.result! : item));
+
+        if (isCreatedRecord) {
+          setStateCreateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        } else {
+          setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        }
       }
       showMergeMessage.success(`保存成功！`);
       await (isCreatedRecord ? onAfterInsert : onAfterUpdate).exec({ result: resp.data.result, responseData: resp.data });
@@ -239,6 +248,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   }, [http, loading, runningConfig.module, onBeforeInsert, onBeforeUpdate, onAfterInsert, onAfterUpdate]);
 
+  /*保存行内编辑的数据*/
   const saveRecord = useCallback(async (sourceRecord: PlainObject, validate = true) => {
     const isCreatedRecord = !!stateCreateIdMapper[sourceRecord.id];
     const showIndex = getShowIndex(sourceRecord);
@@ -258,7 +268,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       } else {
         editRecord = form.getFieldsValue();
       }
-      return await requestUpsert({ isCreatedRecord, sourceRecord, editRecord });
+      return await requestUpsert({ isCreatedRecord, sourceRecord, editRecord, isFormCreate: false });
     } catch (e) {
       showError(e);
     }
@@ -329,12 +339,14 @@ export function useAutoTableState(autoTable: iAutoTable) {
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,
+    getDefaultNewRow, requestUpsert,
   }), [
     load, reload, editRecord,
     deleteRecord, saveRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,
+    getDefaultNewRow, requestUpsert,
   ]);
 
   return {

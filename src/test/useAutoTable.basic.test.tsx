@@ -57,7 +57,7 @@ describe("useAutoTable基本功能测试", () => {
       });
       return (
         <div>
-          <button data-testid="reload-btn" onClick={autoTable.reload}>
+          <button data-testid="reload-btn" onClick={autoTable.methods.reload}>
             手动加载
           </button>
           {autoTable.render()}

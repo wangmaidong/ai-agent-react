@@ -1,29 +1,69 @@
 import { Card } from "antd";
 import { PageContainer } from "../components/PageContainer/PageContainer";
-import { useAutoTable } from "../components/AutoTable/useAutoTable.tsx";
+import { useAutoTable, useCrmTable, useErpTable } from "../components/AutoTable/useAutoTable.tsx";
 
-export const HomePage = () => {
-
+function Demo1() {
   const autoTable = useAutoTable(() => ({
-    module: "user",
+    module: "product",
     columns: [
-      { type: "input", title: "用户名", dataIndex: "username", key: "username", required: true },
-      { type: "input", title: "用户名", dataIndex: "username", key: "username" },
-      {
-        type: "input", title: "用户昵称", dataIndex: "fullName", key: "fullName",
-        width: 200,
-        rules: [{ pattern: /^hello/, message: "必须以hello开头" }],
-      },
+      { type: "image", title: "预览图", dataIndex: "pictureUrl", imgHeight: 50 },
+      { type: "input", title: "商品名称", dataIndex: "name", width: 500 },
     ],
   }));
 
   return (
     <PageContainer>
-      <Card>
+      <Card title="useAutoTable">
         {autoTable.render()}
       </Card>
     </PageContainer>
   );
+}
+
+function Demo2() {
+  const autoTable = useCrmTable(() => ({
+    module: "product",
+    columns: [
+      { type: "image", title: "预览图", dataIndex: "pictureUrl", imgHeight: 50 },
+      { type: "input", title: "商品名称", dataIndex: "name", width: 500 },
+    ],
+  }));
+
+  return (
+    <PageContainer>
+      <Card title="useCrmTable">
+        {autoTable.render()}
+      </Card>
+    </PageContainer>
+  );
+}
+
+function Demo3() {
+  const autoTable = useErpTable(() => ({
+    module: "product",
+    columns: [
+      { type: "image", title: "预览图", dataIndex: "pictureUrl", imgHeight: 50 },
+      { type: "input", title: "商品名称", dataIndex: "name", width: 500 },
+    ],
+  }));
+
+  return (
+    <PageContainer>
+      <Card title="useErpTable">
+        {autoTable.render()}
+      </Card>
+    </PageContainer>
+  );
+}
+
+export const HomePage = () => {
+  return <>
+    <Demo1 />
+    <br/>
+    <Demo2 />
+    <br/>
+    <Demo3 />
+  </>;
 };
 
 export default HomePage;

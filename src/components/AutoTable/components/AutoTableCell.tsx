@@ -27,7 +27,7 @@ export const AutoTableCell = (props: {
       rules.push({ required: true, message: `请填写${props.col.title}` });
     }
     return rules;
-  }, []);
+  }, [props.col, formData]);
 
   if (cellEditable) {
     if (!!props.col.inlineEditor) {

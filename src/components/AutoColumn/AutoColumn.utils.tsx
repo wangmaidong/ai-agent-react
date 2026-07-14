@@ -2,6 +2,8 @@ import { type FormInstance, type FormItemProps, type TableColumnType } from "ant
 import React from "react";
 import type { PlainObject } from "@peryl/utils/event";
 import type { Rule } from "antd/es/form";
+import type { iAutoTableDefaultConfig, iAutoTableUseConfig } from "../AutoTable/useAutoTable.utils.tsx";
+import type { iAppService } from "../../AppService/useAppService.tsx";
 
 /*---------------------------------------types base-------------------------------------------*/
 

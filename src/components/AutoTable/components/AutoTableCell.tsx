@@ -18,7 +18,7 @@ export const AutoTableCell = (props: {
     const colEditable = typeof props.col.editable === "function" ? props.col.editable(record, props.index) : props.col.editable;
     if (colEditable != null) {return colEditable;}
     return rowEditable;
-  }, [props.col, rowEditable, props.record, props.index]);
+  }, [props.col, rowEditable, props.record, props.index, formData]);
 
   const cellRules = useMemo(() => {
     const { rules: _rules, required } = props.col;

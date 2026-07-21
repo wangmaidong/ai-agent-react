@@ -1,15 +1,19 @@
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { type FormInstance, message } from "antd";
 import { omit } from "@peryl/utils/omit.ts";
 import { deepcopy } from "@peryl/utils/deepcopy.ts";
 import type { AxiosRequestConfig } from "axios";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
-import type { iAutoTable } from "../useAutoTable.utils.tsx";
+import type { iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
 import { getRowsMapper } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
 import { useRenderHook } from "../../../uses/useRenderHook.tsx";
+import { AutoTableSaveButtonBar } from "../components/AutoTableSaveButtonBar.tsx";
+import { uuid } from "@peryl/utils/uuid";
+import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
+import { toArray } from "@peryl/utils/toArray";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -18,15 +22,25 @@ export function useAutoTableState(autoTable: iAutoTable) {
     appService: { http },
   } = autoTable;
 
+  const nextId = useIdGenerator();
+
   /*---------------------------------------hooks-------------------------------------------*/
+
+  const [buttonConfigs] = useState([] as (iAutoTableConfigButton | null | undefined)[]);
+  buttonConfigs.splice(0, buttonConfigs.length);
 
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();
 
-  const hooks = {
+  const hooks = useMemo(() => ({
     bodyRender,
     searchRender,
-  };
+    buttonConfigs,
+  }), [
+    bodyRender,
+    searchRender,
+    buttonConfigs,
+  ]);
 
   /*---------------------------------------state-------------------------------------------*/
 
@@ -48,23 +62,36 @@ export function useAutoTableState(autoTable: iAutoTable) {
   /*哪些row的id应该开启编辑状态，新建以及编辑的行都应该开启编辑状态*/
   const editIdMapper = useMemo(() => ({ ...stateUpdateIdMapper, ...stateCreateIdMapper }), [stateUpdateIdMapper, stateCreateIdMapper]);
 
+  /*判断表格是否处于编辑状态*/
+  const isTableEditing = useMemo(() => Object.values(editIdMapper).some(i => !!i), [editIdMapper]);
+
   /*用来通过record找到FormInstance的一个管理器*/
   const [formInstanceManager] = useState(() => new WeakMap<PlainObject, FormInstance>());
 
   const { loading, isLoading } = useLoadingState();
 
+  /*用来控制按钮的渲染，当这个【overrideButtonContent】有值的时候，渲染这个值*/
+  const [overrideButtonContent, setOverrideButtonContent] = useState(null as null | React.ReactNode);
+
+  useEffect(() => {
+    if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
+    return () => {setOverrideButtonContent(null);};
+  }, [isTableEditing]);
+
   const state = useMemo(() => ({
     data, setData,
     statePagination, setStatePagination,
-    editIdMapper,
+    editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
+    overrideButtonContent,
   }), [
     data, setData,
     statePagination, setStatePagination,
-    editIdMapper,
+    editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
+    overrideButtonContent,
   ]);
 
   /*---------------------------------------methods-------------------------------------------*/
@@ -189,11 +216,47 @@ export function useAutoTableState(autoTable: iAutoTable) {
     requestUpsert,
   ]);
 
-  const cancelEditRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
-    const recordList = Array.isArray(record) ? record : [record];
+  const cancelEditRecord = useCallback(async (record?: PlainObject | PlainObject[]) => {
+    const recordList = !record ? data : Array.isArray(record) ? record : [record];
     // console.log("before", await getNewestValue(setStateUpdateIdMapper));
     setStateUpdateIdMapper(prevMapper => omit(prevMapper, recordList.map(i => i.id)));
     // console.log("after", await getNewestValue(setStateUpdateIdMapper));
+  }, [data]);
+
+  /*复制一行或者多行数据*/
+  const copyRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
+
+  }, []);
+
+  /*获取一条默认的新行数据*/
+  const { defaultNewRow, defaultNewRowId } = runningConfig;
+  const getDefaultNewRow = useCallback(async (initialValues?: PlainObject) => {
+    const initialNewRecord: Record<string, any> = deepcopy(
+      initialValues ?? (!defaultNewRow ? {} : (
+        typeof defaultNewRow === "function" ? await defaultNewRow() : defaultNewRow
+      )),
+    );
+    if (!initialNewRecord.id) {
+      if (defaultNewRowId) {
+        initialNewRecord.id = await nextId();
+      } else {
+        initialNewRecord.id = `new_${uuid()}`;
+      }
+    }
+    return initialNewRecord;
+  }, [defaultNewRow, defaultNewRowId]);
+
+  /*新建一条数据*/
+  const createRecord = useCallback(async (initialValues?: PlainObject | PlainObject[]) => {
+    const initialRecords = await Promise.all(toArray(initialValues).map(item => getDefaultNewRow(item)));
+    setData(prevList => [...initialRecords, ...prevList]);
+    /*将新建的行数据标记为新建数据*/
+    setStateCreateIdMapper(prevMapper => ({ ...prevMapper, ...getRowsMapper(initialRecords, { key: "id", value: () => true }) }));
+  }, [getDefaultNewRow]);
+
+  /*保存数据*/
+  const save = useCallback(async () => {
+
   }, []);
 
   const methods = useMemo(() => ({
@@ -201,11 +264,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
     deleteRecord, saveRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
+    copyRecord, createRecord, save,
   }), [
     load, reload, editRecord,
-    deleteRecord, saveRecord,
+    deleteRecord, saveRecord, copyRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
+    copyRecord, createRecord, save,
   ]);
 
   return {

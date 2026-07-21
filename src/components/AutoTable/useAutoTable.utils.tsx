@@ -36,7 +36,7 @@ export interface iAutoTableInputConfig {
   operations?: iAutoTableConfigOperations,                    /*自定义渲染操作栏内容*/
   defaultNewRow?: iAutoTableConfigDefaultNewRow,              /*默认新建行数据*/
   defaultNewRowId?: boolean,                                  /*新建的行数据是否需要自动获取一个id*/
-  buttons?: iAutoTableConfigButtons,                          /*自定义按钮*/
+  buttons?: iAutoTableConfigButton[],                         /*自定义按钮*/
   sortField?: string,                                         /*默认排序字段*/
   sortDesc?: boolean,                                         /*默认排序方式*/
   searchField?: string,                                       /*默认搜索字段*/
@@ -50,7 +50,6 @@ export interface iAutoTableInputConfig {
 /*类型太长的可以定义到下面这里*/
 export type iAutoTableConfigOperations = (record: PlainObject, index: number) => React.ReactNode
 export type iAutoTableConfigDefaultNewRow = PlainObject | (() => PlainObject | Promise<PlainObject>)
-export type iAutoTableConfigButtons = { label?: string, onClick?: () => void, render?: () => React.ReactElement }[]
 
 
 export type iAutoTableUseConfig = iAutoTableInputConfig & Partial<iAutoTableDefaultConfig>   // useAutoTable配置参数类型
@@ -62,6 +61,22 @@ export interface iAutoTable {
   appService: iAppService,
   render: () => React.ReactNode,
 }
+
+
+export type iAutoTableConfigButton = {
+  key: string,                        // 按钮唯一标识
+  label: string,                      // 按钮文本内容
+  seq?: number,                       // 按钮排序序号
+  icon?: React.ReactNode,             // 按钮图标
+  onClick?: () => void,               // 按钮点击处理逻辑
+  render?: React.ReactElement,        // 按钮自定义渲染内容
+  dropdownButton?: boolean,           // 按钮是否是下拉按钮
+  disabled?: boolean,                 // 按钮是否禁用
+  loading?: boolean,                  // 按钮是否加载中
+  primary?: boolean,                  // 按钮是否为主要按钮
+}
+
+/*---------------------------------------context-------------------------------------------*/
 
 // 是AutoTable向所有子孙组件透传的上下文
 export const AutoTableContext = React.createContext<iAutoTable | null>(null);
@@ -86,6 +101,8 @@ export const useAutoTableRowContext = (): iAutoTableRowProvideContextValue => {
   if (!val) {throw new Error("useAutoTableRowContext must be used within a AutoTableRowProvider");}
   return val;
 };
+
+/*---------------------------------------module-------------------------------------------*/
 
 export interface iAutoTableModuleMeta {
   seq: number,

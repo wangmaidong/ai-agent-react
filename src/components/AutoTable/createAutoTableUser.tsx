@@ -9,6 +9,8 @@ import { useAutoTableFilterForm } from "./uses/useAutoTable.filterForm.tsx";
 import { useAutoTableFilterSearch } from "./uses/useAutoTable.filterSearch.tsx";
 import { useAutoTableFilterText } from "./uses/useAutoTable.filterText.tsx";
 import { Space } from "antd";
+import "./auto-table.scss";
+import { useAutoTableButtons } from "./uses/useAutoTable.buttons.tsx";
 
 export function createAutoTableUser(defaultConfig: iAutoTableDefaultConfig) {
 
@@ -61,3 +63,4 @@ GlobalAutoTableModuleRegistration.addModule(4, "filterForm", useAutoTableFilterF
 GlobalAutoTableModuleRegistration.addModule(5, "filterSearch", useAutoTableFilterSearch);
 GlobalAutoTableModuleRegistration.addModule(6, "filterText", useAutoTableFilterText);
 GlobalAutoTableModuleRegistration.addModule(7, "content", useAutoTableContent);
+GlobalAutoTableModuleRegistration.addModule(8, "buttons", useAutoTableButtons);

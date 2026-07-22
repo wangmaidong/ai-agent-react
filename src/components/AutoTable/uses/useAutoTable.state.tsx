@@ -7,13 +7,14 @@ import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
 import type { iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
 import { getRowsMapper } from "../../AutoColumn/AutoColumn.utils.tsx";
-import type { BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
+import type { BatisDeleteResponse, BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
 import { useRenderHook } from "../../../uses/useRenderHook.tsx";
 import { AutoTableSaveButtonBar } from "../components/AutoTableSaveButtonBar.tsx";
 import { uuid } from "@peryl/utils/uuid";
 import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
 import { toArray } from "@peryl/utils/toArray";
+import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -48,7 +49,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*分页状态数据*/
   const [statePagination, setStatePagination] = useState(() => ({
-    current: 1,
+    pageCurrent: 1,
     pageSize: runningConfig.pageSize,
     total: 0,
   }));
@@ -74,6 +75,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [overrideButtonContent, setOverrideButtonContent] = useState(null as null | React.ReactNode);
 
   useEffect(() => {
+    // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
     return () => {setOverrideButtonContent(null);};
   }, [isTableEditing]);
@@ -96,7 +98,10 @@ export function useAutoTableState(autoTable: iAutoTable) {
 
   /*---------------------------------------methods-------------------------------------------*/
 
-  const load = useCallback(async (page: number, pageSize: number) => {
+  /*page是从0开始的*/
+  const load = useCallback(async (page?: number, pageSize?: number) => {
+    page = page ?? statePagination.pageCurrent - 1;
+    pageSize = pageSize ?? statePagination.pageSize;
     const closeLoading = loading();
     try {
       const resp = await http.post<BatisQueryResponse>(`/general/${runningConfig.module}/list`, {
@@ -105,13 +110,13 @@ export function useAutoTableState(autoTable: iAutoTable) {
         withCount: true,
       } satisfies BatisQueryBody);
       setData(resp.data.list ?? []);
-      setStatePagination({ pageSize, current: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
+      setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
     } catch (e) {
       showError(e);
     } finally {
       closeLoading();
     }
-  }, [runningConfig.module, http, loading]);
+  }, [runningConfig.module, http, loading, statePagination]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -119,7 +124,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const getShowIndex = useCallback((record: PlainObject) => {
     const index = data.findIndex(i => i.id === record.id);
     if (index === -1) {return index;}
-    return (statePagination.current - 1) * statePagination.pageSize + index + 1;
+    return (statePagination.pageCurrent - 1) * statePagination.pageSize + index + 1;
   }, [data, statePagination]);
 
   const editRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
@@ -129,7 +134,27 @@ export function useAutoTableState(autoTable: iAutoTable) {
     // console.log("after", await getNewestValue(setStateUpdateIdMapper));
   }, []);
 
-  const deleteRecord = useCallback((record: PlainObject) => {}, []);
+  const deleteRecord = useCallback(async (record: PlainObject) => {
+    const requestConfig: AxiosRequestConfig = {
+      url: `/general/${runningConfig.module}/delete`,
+      method: "post",
+      data: { id: record.id },
+    };
+    const closeLoading = loading();
+    try {
+      const resp = await http.request<BatisDeleteResponse>(requestConfig);
+      if (resp.data.affectedRows != null && resp.data.affectedRows >= 1) {
+        message.success("删除成功！");
+      } else {
+        message.error("删除失败！");
+      }
+      await load();
+    } catch (e) {
+      showError(e);
+    } finally {
+      closeLoading();
+    }
+  }, [load, runningConfig.module, http, loading]);
 
   /*保存行数据*/
   const requestUpsert = useCallback(async (
@@ -177,7 +202,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       } else {
         setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
       }
-      message.success(`第${showIndex}行保存成功！`);
+      showMergeMessage.success(`保存成功！`);
     } catch (e) {
       showError(e);
     } finally {
@@ -216,17 +241,19 @@ export function useAutoTableState(autoTable: iAutoTable) {
     requestUpsert,
   ]);
 
+  /*取消行数据的编辑状态，如果是新建数据要删除*/
   const cancelEditRecord = useCallback(async (record?: PlainObject | PlainObject[]) => {
-    const recordList = !record ? data : Array.isArray(record) ? record : [record];
-    // console.log("before", await getNewestValue(setStateUpdateIdMapper));
-    setStateUpdateIdMapper(prevMapper => omit(prevMapper, recordList.map(i => i.id)));
-    // console.log("after", await getNewestValue(setStateUpdateIdMapper));
-  }, [data]);
+    /*没有传递record，就说明是取消所有行的编辑动作，否则目标行数据的编辑动作*/
+    const targetRows = !record ? data : toArray(record);
+    /*将targetRows转成id mapper*/
+    const targetIdMapper = getRowsMapper(targetRows, { key: "id", value: () => true });
+    /*获取最新的StateCreateIdMapper，用于删除stateData中的新建数据*/
+    const newestStateCreateIdMapper = stateCreateIdMapper;
 
-  /*复制一行或者多行数据*/
-  const copyRecord = useCallback(async (record: PlainObject | PlainObject[]) => {
-
-  }, []);
+    setData(prevList => prevList.filter(i => !(!!newestStateCreateIdMapper[i.id] && !!targetIdMapper[i.id])));
+    setStateUpdateIdMapper(prevMapper => !record ? {} : omit(prevMapper, Object.keys(targetIdMapper)));
+    setStateCreateIdMapper(prevMapper => !record ? {} : omit(prevMapper, Object.keys(targetIdMapper)));
+  }, [data, stateCreateIdMapper]);
 
   /*获取一条默认的新行数据*/
   const { defaultNewRow, defaultNewRowId } = runningConfig;
@@ -238,13 +265,15 @@ export function useAutoTableState(autoTable: iAutoTable) {
     );
     if (!initialNewRecord.id) {
       if (defaultNewRowId) {
+        /*从后端取一个真实有效不可能冲突的id*/
         initialNewRecord.id = await nextId();
       } else {
+        /*前端临时给一个id，在保存的时候，检测如果是前端生成的id，发请求保存的时候去掉这个id*/
         initialNewRecord.id = `new_${uuid()}`;
       }
     }
     return initialNewRecord;
-  }, [defaultNewRow, defaultNewRowId]);
+  }, [defaultNewRow, defaultNewRowId, nextId]);
 
   /*新建一条数据*/
   const createRecord = useCallback(async (initialValues?: PlainObject | PlainObject[]) => {
@@ -254,10 +283,17 @@ export function useAutoTableState(autoTable: iAutoTable) {
     setStateCreateIdMapper(prevMapper => ({ ...prevMapper, ...getRowsMapper(initialRecords, { key: "id", value: () => true }) }));
   }, [getDefaultNewRow]);
 
+  /*复制一行或者多行数据*/
+  const copyRecord = useCallback(async (record: PlainObject) => {
+    const { id, createdAt, createdBy, updatedAt, updatedBy, ...leftRecord } = record;
+    return createRecord(leftRecord);
+  }, [createRecord]);
+
   /*保存数据*/
   const save = useCallback(async () => {
-
-  }, []);
+    const editRecords = data.filter(i => editIdMapper[i.id]);
+    editRecords.map(i => saveRecord(i));
+  }, [data, editIdMapper, saveRecord]);
 
   const methods = useMemo(() => ({
     load, reload, editRecord,
@@ -267,7 +303,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
     copyRecord, createRecord, save,
   }), [
     load, reload, editRecord,
-    deleteRecord, saveRecord, copyRecord,
+    deleteRecord, saveRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,

@@ -15,6 +15,7 @@ import { uuid } from "@peryl/utils/uuid";
 import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
 import { toArray } from "@peryl/utils/toArray";
 import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
+import { useEventHook } from "../../../uses/useEventHook.tsx";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -33,14 +34,21 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();
 
+  const onClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
+  const onDoubleClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
+
   const hooks = useMemo(() => ({
     bodyRender,
     searchRender,
     buttonConfigs,
+    onClickRow,
+    onDoubleClickRow,
   }), [
     bodyRender,
     searchRender,
     buttonConfigs,
+    onClickRow,
+    onDoubleClickRow,
   ]);
 
   /*---------------------------------------state-------------------------------------------*/

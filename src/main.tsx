@@ -8,7 +8,6 @@ export { createAutoTableUser } from "./components/AutoTable/createAutoTableUser.
 
 export * from "./components/AutoTable/uses/useAutoTable.config.tsx";
 export * from "./components/AutoTable/uses/useAutoTable.state.tsx";
-export * from "./components/AutoTable/uses/useAutoTable.handler.tsx";
 export * from "./components/AutoTable/uses/useAutoTable.content.tsx";
 export * from "./components/AutoTable/uses/useAutoTable.filterText.tsx";
 export * from "./components/AutoTable/uses/useAutoTable.filterForm.tsx";

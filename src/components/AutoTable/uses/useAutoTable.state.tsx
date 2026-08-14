@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FormInstance, message } from "antd";
 import { omit } from "@peryl/utils/omit.ts";
 import { deepcopy } from "@peryl/utils/deepcopy.ts";
 import type { AxiosRequestConfig } from "axios";
 import type { PlainObject } from "@peryl/utils/event.ts";
 import { useLoadingState } from "../../../uses/useLoadingState.ts";
-import type { iAutoTable, iAutoTableConfigButton } from "../useAutoTable.utils.tsx";
-import { getRowsMapper } from "../../AutoColumn/AutoColumn.utils.tsx";
+import type { iAutoOptionSortData, iAutoTable, iAutoTableConfigButton, iAutoTempColumnConfig } from "../useAutoTable.utils.tsx";
+import { getRowsMapper, type iAutoColumn } from "../../AutoColumn/AutoColumn.utils.tsx";
 import type { BatisDeleteResponse, BatisInsertResponse, BatisQueryBody, BatisQueryResponse, BatisUpdateResponse } from "../batis.type.tsx";
 import { showError } from "../../../utils/showError.ts";
 import { useRenderHook } from "../../../uses/useRenderHook.tsx";
@@ -16,6 +16,9 @@ import { useIdGenerator } from "../../../uses/useIdGenerator.ts";
 import { toArray } from "@peryl/utils/toArray";
 import { showMergeMessage } from "../../../uses/showMergeMessage.tsx";
 import { useEventHook } from "../../../uses/useEventHook.tsx";
+import type { iFilterTip } from "../../AutoFilter/AutoFilter.tip.tsx";
+import { type iFilterHandlerQueryMeta, type iFilterQueryParam, mergeQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
+import { getNewestValue } from "../../../uses/getNewestValue.ts";
 
 export function useAutoTableState(autoTable: iAutoTable) {
 
@@ -31,24 +34,43 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const [buttonConfigs] = useState([] as (iAutoTableConfigButton | null | undefined)[]);
   buttonConfigs.splice(0, buttonConfigs.length);
 
+  const [columnConfigs] = useState([] as (iAutoColumn | null | undefined)[]);
+  columnConfigs.splice(0, columnConfigs.length);
+
+  /*筛选标签展示*/
+  const [showTips] = useState([] as (iFilterTip | iFilterTip[] | null | undefined)[]);
+  showTips.splice(0, showTips.length);
+
+  // 查询参数事件钩子
+  const onQueryParam = useEventHook<iFilterQueryParam>();
+
   const bodyRender = useRenderHook();
   const searchRender = useRenderHook();
 
   const onClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
   const onDoubleClickRow = useEventHook<{ e: React.MouseEvent, record: PlainObject }>();
+  const onClickTitle = useEventHook<{ column: iAutoColumn, e: React.MouseEvent }>();
+  const onSelectRowChange = useEventHook<{ record: PlainObject | null }>(); // 选中行发生变化的事件钩子
+
+  const onBeforeLoad = useEventHook<{ requestConfig: AxiosRequestConfig }>();
+  const onAfterLoad = useEventHook<{ data: PlainObject[], resp: any }>();
+  const onBeforeInsert = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterInsert = useEventHook<{ result: PlainObject | null | undefined, responseData: any }>();
+  const onBeforeUpdate = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterUpdate = useEventHook<{ result: PlainObject | null | undefined, responseData: any }>();
+  const onBeforeDelete = useEventHook<{ record: PlainObject, requestConfig: AxiosRequestConfig }>();
+  const onAfterDelete = useEventHook<{ record: PlainObject, responseData: any }>();
 
   const hooks = useMemo(() => ({
-    bodyRender,
-    searchRender,
-    buttonConfigs,
-    onClickRow,
-    onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle, onSelectRowChange,
+    onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
+    onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   }), [
-    bodyRender,
-    searchRender,
-    buttonConfigs,
-    onClickRow,
-    onDoubleClickRow,
+    bodyRender, searchRender, buttonConfigs, columnConfigs, showTips,
+    onClickRow, onDoubleClickRow, onQueryParam, onClickTitle, onSelectRowChange,
+    onBeforeLoad, onAfterLoad, onBeforeInsert, onAfterInsert,
+    onBeforeUpdate, onAfterUpdate, onBeforeDelete, onAfterDelete,
   ]);
 
   /*---------------------------------------state-------------------------------------------*/
@@ -82,6 +104,12 @@ export function useAutoTableState(autoTable: iAutoTable) {
   /*用来控制按钮的渲染，当这个【overrideButtonContent】有值的时候，渲染这个值*/
   const [overrideButtonContent, setOverrideButtonContent] = useState(null as null | React.ReactNode);
 
+  const renderColumnsRef = useRef([] as iAutoColumn[]);
+
+  const [sortData, setSortData] = useState((): iAutoOptionSortData[] => [{ field: runningConfig.sortField ?? "createdAt", desc: runningConfig.sortDesc ?? true }]);
+
+  const [tempColumns, setTempColumns] = useState(null as null | iAutoTempColumnConfig[]);
+
   useEffect(() => {
     // eslint-disable-next-line
     if (isTableEditing) {setOverrideButtonContent(<AutoTableSaveButtonBar />);}
@@ -91,40 +119,101 @@ export function useAutoTableState(autoTable: iAutoTable) {
   const state = useMemo(() => ({
     data, setData,
     statePagination, setStatePagination,
+    stateCreateIdMapper, stateUpdateIdMapper,
     editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
     overrideButtonContent,
+    renderColumnsRef,
+    sortData, setSortData,
+    tempColumns, setTempColumns,
   }), [
     data, setData,
     statePagination, setStatePagination,
+    stateCreateIdMapper, stateUpdateIdMapper,
     editIdMapper, isTableEditing,
     formInstanceManager,
     loading, isLoading,
     overrideButtonContent,
+    renderColumnsRef,
+    sortData, setSortData,
+    tempColumns, setTempColumns,
   ]);
 
   /*---------------------------------------methods-------------------------------------------*/
 
+  const { parentTable, parentKeyMap } = runningConfig as any;
   /*page是从0开始的*/
   const load = useCallback(async (page?: number, pageSize?: number) => {
     page = page ?? statePagination.pageCurrent - 1;
     pageSize = pageSize ?? statePagination.pageSize;
     const closeLoading = loading();
     try {
-      const resp = await http.post<BatisQueryResponse>(`/general/${runningConfig.module}/list`, {
-        page: page,
-        pageSize: pageSize,
-        withCount: true,
-      } satisfies BatisQueryBody);
+
+      const requestConfig: AxiosRequestConfig = {
+        url: `/general/${runningConfig.module}/list`,
+        method: "post",
+        data: {
+          page: page,
+          pageSize: pageSize,
+          withCount: true,
+        } satisfies BatisQueryBody,
+      };
+
+      /*合并查询参数*/
+      let queryParam = await onQueryParam.exec(requestConfig.data);
+
+      /*处理父子表关联查询参数*/
+      /*父子表查询参数*/
+      if (!!parentTable && parentKeyMap) {
+        const parentSelectRowId = await getNewestValue((parentTable as iAutoTable).singleSelect.setSingleSelectId);
+        const parentDataList = await getNewestValue((parentTable as iAutoTable).state.setData);
+        const parentSelectRow: PlainObject | undefined = parentDataList.find(i => i.id === parentSelectRowId);
+        if (!!parentSelectRow) {
+          /*父表的筛选条件*/
+          const queries = Object.entries(parentKeyMap as Record<string, string>).reduce((prev, [childKey, parentKey]) => {
+            prev.push({ field: childKey, operator: "=", value: parentSelectRow[parentKey] });
+            return prev;
+          }, [] as iFilterHandlerQueryMeta[]);
+          queryParam = mergeQueryParam(queryParam, { queries });
+        } else {
+          /*父表没有选中行，子表load直接清空数据*/
+          setData([]);
+          return;
+        }
+      }
+
+      /*格式化查询参数*/
+      if (!!runningConfig.queryParam) {
+        queryParam = mergeQueryParam(
+          queryParam,
+          typeof runningConfig.queryParam === "function" ? await runningConfig.queryParam() : runningConfig.queryParam,
+        );
+      }
+      const { queries, expression, ...leftQueryParam } = queryParam ?? {};
+      requestConfig.data = { ...requestConfig.data, ...leftQueryParam };
+      if (!!queries?.length) {
+        requestConfig.data.filters = queries;
+        if (!!expression) {requestConfig.data.filterExpression = expression;}
+      }
+
+      await onBeforeLoad.exec({ requestConfig });
+      const resp = await http.request<BatisQueryResponse>(requestConfig);
       setData(resp.data.list ?? []);
       setStatePagination({ pageSize, pageCurrent: page + 1, total: resp.data.total ?? resp.data.list?.length ?? 0 });
+      await onAfterLoad.exec({ data: resp.data.list ?? [], resp });
+      return resp;
     } catch (e) {
       showError(e);
     } finally {
       closeLoading();
     }
-  }, [runningConfig.module, http, loading, statePagination]);
+  }, [
+    runningConfig.module, http,
+    loading, statePagination,
+    onBeforeLoad, onAfterLoad,
+    onQueryParam, parentTable, parentKeyMap,
+  ]);
 
   const reload = useCallback(() => load(0, statePagination.pageSize), [load, statePagination.pageSize]);
 
@@ -143,39 +232,39 @@ export function useAutoTableState(autoTable: iAutoTable) {
   }, []);
 
   const deleteRecord = useCallback(async (record: PlainObject) => {
-    const requestConfig: AxiosRequestConfig = {
-      url: `/general/${runningConfig.module}/delete`,
-      method: "post",
-      data: { id: record.id },
-    };
     const closeLoading = loading();
     try {
+
+      const requestConfig: AxiosRequestConfig = {
+        url: `/general/${runningConfig.module}/delete`,
+        method: "post",
+        data: { id: record.id },
+      };
+      await onBeforeDelete.exec({ record, requestConfig });
       const resp = await http.request<BatisDeleteResponse>(requestConfig);
       if (resp.data.affectedRows != null && resp.data.affectedRows >= 1) {
         message.success("删除成功！");
       } else {
         message.error("删除失败！");
       }
+      await onAfterDelete.exec({ record, responseData: resp.data });
       await load();
     } catch (e) {
       showError(e);
     } finally {
       closeLoading();
     }
-  }, [load, runningConfig.module, http, loading]);
+  }, [load, runningConfig.module, http, loading, onBeforeDelete, onAfterDelete]);
 
   /*保存行数据*/
   const requestUpsert = useCallback(async (
-    { isCreatedRecord, sourceRecord, editRecord }: {
+    { isCreatedRecord, sourceRecord, editRecord, isFormCreate }: {
       sourceRecord: PlainObject, // 原始行数据
       editRecord: PlainObject,   // 编辑后的行数据
       isCreatedRecord: boolean, // 是否为行内编辑新建的数据
+      isFormCreate: boolean,    // 是否为表单新建的数据
     },
   ) => {
-
-    // 先获取行的索引
-    const showIndex = getShowIndex(sourceRecord);
-
     const closeLoading = loading();
     try {
 
@@ -197,28 +286,39 @@ export function useAutoTableState(autoTable: iAutoTable) {
         method: "post",
         data: { row: requestRecord },
       };
-
+      await (isCreatedRecord ? onBeforeInsert : onBeforeUpdate).exec({ record: requestRecord, requestConfig });
       const resp = await http.request<BatisInsertResponse | BatisUpdateResponse>(requestConfig);
       if (!resp.data.result) {
         throw new Error("保存返回数据为空");
       }
-      // 更新表格数据
-      setData(prevData => prevData.map(item => item.id === sourceRecord.id ? resp.data.result! : item));
-
-      if (isCreatedRecord) {
-        setStateCreateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+      if (isFormCreate) {
+        setData(prevData => [resp.data.result as PlainObject, ...prevData].slice(0, statePagination.pageSize));
       } else {
-        setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        // 更新表格数据
+        setData(prevData => prevData.map(item => item.id === sourceRecord.id ? resp.data.result! : item));
+
+        if (isCreatedRecord) {
+          setStateCreateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        } else {
+          setStateUpdateIdMapper(prevMapper => omit(prevMapper, [sourceRecord.id]));
+        }
       }
       showMergeMessage.success(`保存成功！`);
+      await (isCreatedRecord ? onAfterInsert : onAfterUpdate).exec({ result: resp.data.result, responseData: resp.data });
     } catch (e) {
       showError(e);
     } finally {
       closeLoading();
     }
 
-  }, [getShowIndex, http, loading, runningConfig.module]);
+  }, [
+    http, loading, runningConfig.module,
+    onBeforeInsert, onBeforeUpdate,
+    onAfterInsert, onAfterUpdate,
+    statePagination.pageSize,
+  ]);
 
+  /*保存行内编辑的数据*/
   const saveRecord = useCallback(async (sourceRecord: PlainObject, validate = true) => {
     const isCreatedRecord = !!stateCreateIdMapper[sourceRecord.id];
     const showIndex = getShowIndex(sourceRecord);
@@ -238,7 +338,7 @@ export function useAutoTableState(autoTable: iAutoTable) {
       } else {
         editRecord = form.getFieldsValue();
       }
-      return await requestUpsert({ isCreatedRecord, sourceRecord, editRecord });
+      return await requestUpsert({ isCreatedRecord, sourceRecord, editRecord, isFormCreate: false });
     } catch (e) {
       showError(e);
     }
@@ -280,8 +380,30 @@ export function useAutoTableState(autoTable: iAutoTable) {
         initialNewRecord.id = `new_${uuid()}`;
       }
     }
+
+    /*父子表映射字段默认值*/
+    if (!!parentKeyMap && !!parentTable) {
+      const parentSelectRowId = await getNewestValue((parentTable as iAutoTable).singleSelect.setSingleSelectId);
+      const parentDataList = await getNewestValue((parentTable as iAutoTable).state.setData);
+      const parentSelectRow: PlainObject | undefined = parentDataList.find(i => i.id === parentSelectRowId);
+      if (!parentSelectRow) {
+        const err = "父表缺少选中行数据！";
+        showError(err);
+        throw new Error(err);
+      }
+      const defaultNewRecord = Object.entries(parentKeyMap as Record<string, string>)
+        .reduce((prev, [childKey, parentKey]) => {
+          prev[childKey] = parentSelectRow![parentKey];
+          return prev;
+        }, initialNewRecord);
+      Object.assign(initialNewRecord, defaultNewRecord);
+    }
+
     return initialNewRecord;
-  }, [defaultNewRow, defaultNewRowId, nextId]);
+  }, [
+    defaultNewRow, defaultNewRowId, nextId,
+    parentTable, parentKeyMap,
+  ]);
 
   /*新建一条数据*/
   const createRecord = useCallback(async (initialValues?: PlainObject | PlainObject[]) => {
@@ -309,12 +431,14 @@ export function useAutoTableState(autoTable: iAutoTable) {
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,
+    getDefaultNewRow, requestUpsert,
   }), [
     load, reload, editRecord,
     deleteRecord, saveRecord,
     cancelEditRecord, getShowIndex,
     formInstanceManager,
     copyRecord, createRecord, save,
+    getDefaultNewRow, requestUpsert,
   ]);
 
   return {

@@ -16,9 +16,8 @@ export function installColumnToggle() {
     const trueValue = col.trueValue ?? "Y";
     const falseValue = col.falseValue ?? "N";
     return {
-      ...col,
-      type: "toggle",
       width: "120px",
+      getDescriptionPrompt: () => `字段名：${col.title}，字段标识：${String(col.dataIndex)}，说明：数据类型为开关，开启值为${trueValue}，关闭值为${falseValue}`,
       inlineRender: ({ value }) => <Switch value={value === trueValue} disabled />,
       inlineEditor: ({ formData, form, dataIndex }) => (
         <span>
@@ -28,6 +27,7 @@ export function installColumnToggle() {
           />
         </span>
       ),
+      ...col,
     };
   };
 }

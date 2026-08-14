@@ -16,9 +16,22 @@ export function installColumnSelect() {
     const options: { label: string, value: any }[] = col.options.map(item => typeof item === "string" ? { label: item, value: item } : item);
     const value2label = getRowsMapper(options, { key: "value", value: "label" });
     return {
-      ...col,
-      type: "select",
       width: "120px",
+      filterOption: {
+        filterType: "select" as const,
+        filterSubType: "in",
+        field: String(col.dataIndex),
+        label: String(col.title),
+        options: options,
+      },
+      getFilterText: (value): any => {
+        if (Array.isArray(value)) {
+          return value.map(val => value2label[val] ?? val).join(",");
+        } else {
+          return value2label[value] ?? value;
+        }
+      },
+      getDescriptionPrompt: (col) => `字段名：${col.title}，字段标识：${String(col.dataIndex)}，说明：数据类型为下拉选择，选项为${JSON.stringify(options)}，需要你提取选项值`,
       inlineRender: ({ value }) => {
         if (value == null || value.trim() === "") { return null; }
         const strValue = String(value);
@@ -51,6 +64,7 @@ export function installColumnSelect() {
           );
         }
       },
+      ...col,
     };
   };
 }

@@ -1,40 +1,49 @@
 import type { iAutoTable } from "../useAutoTable.utils.tsx";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Space } from "antd";
 import type { iRenderMeta } from "../../../uses/useRenderHook.tsx";
-import { Button, Input, Select, Space } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { type iSingleFilterInstance } from "../../AutoFilter/SingleFilter.tsx";
+import { mergeQueryParam } from "../../AutoFilter/AutoFilter.query.tsx";
+import { AutoFilterSearch } from "../components/AutoFitlerSearch.tsx";
+import type { iFilterTip } from "../../AutoFilter/AutoFilter.tip.tsx";
 
 export function useAutoTableFilterSearch(autoTable: iAutoTable) {
 
-  const { hooks: { bodyRender, searchRender } } = autoTable;
+  const { hooks: { searchRender, bodyRender, onQueryParam, showTips } } = autoTable;
 
-  // 搜索栏渲染钩子增加显示一个搜索框：
+
+  // 获取SingleFilter 的组件实例引用，用来拦截onQueryParam计算查询参数时，
+  // 调用获取SingleFilter的getFilterData方法得到queryParam以及filterTip
+  const singleFilterRef = useRef(null as null | iSingleFilterInstance);
+
+  const [filterTip, setFilterTip] = useState(null as null | undefined | iFilterTip);
+  showTips.push(filterTip);
+
+  /*每次调用onQueryParam时，都会从singleFilterRef取筛选参数，以及更新 filterTip*/
+  onQueryParam.use(useCallback(async (prevQueryParams) => {
+    const { queryParam: newQueryParam, filterTip: newFilterTip } = await singleFilterRef.current!.getFilterData();
+    setFilterTip(newFilterTip);
+    return mergeQueryParam(prevQueryParams, newQueryParam);
+  }, []));
+
   const searchRenderMeta = useMemo((): iRenderMeta | null => ({
-    seq: 1,
     key: "search",
+    seq: 1,
     content: (
       <Space.Compact>
-        <Select defaultValue="username" options={[{ label: "用户名", value: "username" }, { label: "用户昵称", value: "fullName" }]} />
-        <Input />
-        <Button type="primary">
-          <SearchOutlined />
-          <span>查询</span>
-        </Button>
+        <AutoFilterSearch singleFilterRef={singleFilterRef} />
       </Space.Compact>
     ),
   }), []);
 
   searchRender.use(searchRenderMeta);
 
-  /*空白占位，自动占满宽度，目的是为了把按钮组顶到右边*/
   searchRender.use(useMemo(() => ({
-    key: "blank",
+    key: "filler",
     seq: 5,
     content: <div className="filter-search-blank" style={{ flex: 1 }} />,
   }), []));
 
-
-  // 往表格纵向渲染钩子中，渲染搜索栏
   const bodyRenderMeta = useMemo((): iRenderMeta | null => {
     return {
       key: "filterSearch",
@@ -49,13 +58,5 @@ export function useAutoTableFilterSearch(autoTable: iAutoTable) {
 
   bodyRender.use(bodyRenderMeta);
 
-  return {
-    filterSearch: {},
-  };
-}
-
-declare module "../useAutoTable.utils.tsx" {
-  export interface iAutoTable {
-    filterSearch: ReturnType<typeof useAutoTableFilterSearch>["filterSearch"];
-  }
+  return {};
 }

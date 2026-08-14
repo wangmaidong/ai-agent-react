@@ -10,6 +10,7 @@ export function useEventHook<
   const handlersRef = useRef<iHandler[]>([]);
 
   const use = useStableCallback((handler: iHandler) => {
+    // eslint-disable-next-line
     useEffect(() => {
       handlersRef.current.push(handler);
       return () => {

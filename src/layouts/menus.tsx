@@ -11,7 +11,14 @@ export const menus: MenuItem[] = [
   { key: "/pages/resume/resume-user-list", icon: <HomeOutlined />, label: "用户简历" },
   { key: "/pages/demo/demo-backup", icon: <HomeOutlined />, label: "通用表格" },
   { key: "/pages/demo/demo-table-create", icon: <HomeOutlined />, label: "通用表格：新建" },
-
+  { key: "/pages/demo/demo-drawer-service", icon: <HomeOutlined />, label: "抽屉服务" },
+  { key: "/pages/demo/demo-auto-form", icon: <HomeOutlined />, label: "表单封装" },
+  { key: "/pages/demo/demo-form-service", icon: <HomeOutlined />, label: "表单服务" },
+  { key: "/pages/demo/demo-copilot-service", icon: <HomeOutlined />, label: "助手服务" },
+  { key: "/pages/demo/demo-auto-table-cascade-cols", icon: <HomeOutlined />, label: "表格封装: 联动字段" },
+  { key: "/pages/demo/demo-filter-component", icon: <HomeOutlined />, label: "查询表单" },
+  { key: "/pages/demo/demo-auto-table-col-types", icon: <HomeOutlined />, label: "表格Vibe查询" },
+  { key: "/pages/demo/demo-auto-table-parents", icon: <HomeOutlined />, label: "表格封装: 父子联动" },
   // { key: '/pages/book/hotel-list', icon: <CoffeeOutlined/>, label: '酒店预定', },
   //
   // { key: '/pages/org/org', icon: <ClusterOutlined/>, label: '组织管理', },

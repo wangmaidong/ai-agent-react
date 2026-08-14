@@ -13,7 +13,8 @@ export function AutoTableDropdownButton(
     buttonConfigs: iAutoTableConfigButton[]
   }) {
 
-  const [lastActiveButtonConfig, setLastActiveButtonConfig] = useState(null as null | iAutoTableConfigButton);
+  const [lastActiveButtonKey, setLastActiveButtonKey] = useState(null as null | string);
+  const lastActiveButton = useMemo(() => buttonConfigs.find(i => i.key === lastActiveButtonKey), [buttonConfigs, lastActiveButtonKey]);
 
   const dropdownMenuOptions = useMemo((): MenuProps["items"] => buttonConfigs.map(item => ({
     label: item.label,
@@ -21,7 +22,7 @@ export function AutoTableDropdownButton(
     key: item.key,
     disabled: item.disabled || item.loading,
     onClick: () => {
-      setLastActiveButtonConfig(item);
+      setLastActiveButtonKey(item.key);
       item.onClick?.();
     },
     // eslint-disable-next-line
@@ -32,15 +33,15 @@ export function AutoTableDropdownButton(
   return (
     <Dropdown menu={{ items: dropdownMenuOptions }}>
       <Space.Compact>
-        {lastActiveButtonConfig ? (
+        {lastActiveButton ? (
           <Button
-            icon={lastActiveButtonConfig.icon}
-            type={lastActiveButtonConfig.primary ? "primary" : "default"}
-            onClick={lastActiveButtonConfig.onClick}
-            disabled={lastActiveButtonConfig.disabled}
-            loading={lastActiveButtonConfig.loading}
+            icon={lastActiveButton.icon}
+            type={lastActiveButton.primary ? "primary" : "default"}
+            onClick={lastActiveButton.onClick}
+            disabled={lastActiveButton.disabled}
+            loading={lastActiveButton.loading}
           >
-            {lastActiveButtonConfig.label}
+            {lastActiveButton.label}
           </Button>
         ) : (<Button>更多</Button>)}
         <Button icon={<DownOutlined />} />

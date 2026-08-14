@@ -1,0 +1,33 @@
+.filter-editor {
+  .filter-editor-item {
+    flex: 1;
+  }
+}
+
+.multiple-filter-form {
+  --col-gutter: 8px;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  @each $col in 1, 2, 3 {
+    &[data-grid-col="#{$col}"] {
+
+      .multiple-filter-item {
+        width: calc(((100% - (#{$col - 1}) * var(--col-gutter)) / #{$col}));
+        margin-bottom: var(--col-gutter);
+        margin-left: var(--col-gutter);
+        display: flex;
+        align-items: center;
+
+        &:nth-child(#{$col}n+1) {
+          margin-left: 0;
+        }
+
+        &:nth-last-child(-n+#{$col}) {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}

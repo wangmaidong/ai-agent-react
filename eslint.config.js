@@ -26,6 +26,7 @@ export default defineConfig([
       "prefer-const": "off",
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/refs": "off",
     },
   },
 ]);

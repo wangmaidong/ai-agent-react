@@ -29,6 +29,7 @@ export interface iAutoTableDefaultConfig {
   showButtonBar?: boolean,            /*显示按钮栏*/
   paginationPageSizeOptions?: number[],/*页码大小选项*/
   tableProps?: TableProps<PlainObject>,/*传递给Table组件的属性*/
+  autoFormGridCols?: number,          /*表单编辑默认的列数*/
 }
 
 // 调用useAutoTable时才能确定传入的参数类型
@@ -43,8 +44,8 @@ export interface iAutoTableInputConfig {
   sortField?: string,                                         /*默认排序字段*/
   sortDesc?: boolean,                                         /*默认排序方式*/
   searchField?: string,                                       /*默认搜索字段*/
-  // parentTable?: iAutoTable,                                /*父表autoTable*/
-  // parentKeyMap?: Record<string, string>,                   /*父表字段映射*/
+  parentTable?: iAutoTable,                                   /*父表autoTable*/
+  parentKeyMap?: Record<string, string>,                      /*父表字段映射*/
   queryParam?: PlainObject | (() => Promise<PlainObject>),    /*查询参数*/
   createButtonText?: string,                                  /*新建按钮文本内容*/
   handleCreate?: () => void | Promise<void>,                  /*自定义处理新建按钮点击处理逻辑*/
@@ -77,6 +78,23 @@ export type iAutoTableConfigButton = {
   disabled?: boolean,                 // 按钮是否禁用
   loading?: boolean,                  // 按钮是否加载中
   primary?: boolean,                  // 按钮是否为主要按钮
+}
+
+/*排序参数类型*/
+export interface iAutoOptionSortData {
+  field: string,
+  desc: boolean
+}
+
+/*用来Vibe配置表格字段信息的对象类型*/
+export interface iAutoTempColumnConfig {
+  title: string,
+  field: string,
+  type: string,
+  width: number,
+  minWidth: number,
+  fixed: "left" | "center" | "right",
+  seq: number,
 }
 
 /*---------------------------------------context-------------------------------------------*/
